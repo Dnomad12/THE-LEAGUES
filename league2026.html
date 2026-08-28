@@ -5,9 +5,1032 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>League 2026 — Shuffleboard Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #d32f2f; --navy: #002d80; --navy-light: #1a4db5;
+    --gold: #f5c518; --silver: #b0b8c5; --bronze: #cd7f32;
+    --bg: #f4f6fa; --surface: #ffffff; --border: #e0e4ef;
+    --text: #1a1f2e; --text-muted: #6b7280; --green: #16a34a;
+    --shadow: 0 2px 12px rgba(0,45,128,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--surface); box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; border-bottom: 3px solid var(--red); }
+  .header-inner { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 14px; cursor: pointer; text-decoration: none; }
+  .brand-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--red); text-transform: uppercase; }
+  .brand-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: 1px; }
+  .nav { display: flex; gap: 4px; }
+  .nav-btn { background: none; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 14px; border-radius: 6px; text-transform: uppercase; transition: all 0.15s; }
+  .nav-btn:hover { background: var(--bg); color: var(--navy); }
+  .nav-btn.active { background: var(--navy); color: white; }
+  .back-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; text-transform: uppercase; background: var(--bg); border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .back-btn:hover { background: var(--border); color: var(--navy); }
+  .greeting-badge { background: var(--bg); border-left: 3px solid var(--red); padding: 6px 14px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* PAGES */
+  .page { display: none; max-width: 1300px; margin: 0 auto; padding: 32px 24px; }
+  .page.active { display: block; }
+
+  /* HOME */
+  .home-hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, var(--red) 100%); border-radius: 16px; padding: 48px 40px; color: white; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .home-hero::before { content: '🥏'; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-size: 100px; opacity: 0.15; }
+  .home-hero h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 48px; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; }
+  .home-hero p { font-size: 16px; opacity: 0.85; margin-bottom: 24px; }
+  .hero-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .hero-stat { background: rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 20px; min-width: 120px; }
+  .hero-stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 900; }
+  .hero-stat-label { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 1px; }
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .home-card { background: var(--surface); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); }
+  .home-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .rules-list { list-style: none; }
+  .rules-list li { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .rules-list li:last-child { border-bottom: none; }
+  .rule-icon { font-size: 18px; flex-shrink: 0; }
+  .badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .badge-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg); }
+  .badge-icon { font-size: 20px; }
+  .badge-name { font-weight: 700; color: var(--navy); text-transform: uppercase; font-size: 11px; }
+  .badge-desc { color: var(--text-muted); line-height: 1.3; margin-top: 2px; font-size: 11px; }
+  .penalty-item { background: #fff8f8; }
+  .penalty-item .badge-name { color: var(--red); }
+
+  /* SECTION TITLE */
+  .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .section-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* TABLE */
+  .standings-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .standings-table th { background: var(--navy); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px; text-align: left; }
+  .standings-table th.num { text-align: center; }
+  .standings-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  .standings-table td.num { text-align: center; font-weight: 600; }
+  .standings-table tr:last-child td { border-bottom: none; }
+  .standings-table tbody tr:hover { background: var(--bg); }
+  .rank-badge { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; background: var(--border); color: var(--text-muted); }
+  .rank-badge.r1 { background: var(--gold); color: #5a3e00; }
+  .rank-badge.r2 { background: var(--silver); color: #2d3748; }
+  .rank-badge.r3 { background: var(--bronze); color: white; }
+  .player-cell { display: flex; align-items: center; gap: 10px; }
+  .player-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--navy); }
+  .player-name { font-weight: 600; }
+  .pts-chip { display: inline-block; background: var(--navy); color: white; padding: 2px 10px; border-radius: 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; }
+  .pts-chip.leader { background: var(--red); }
+  .diff-pos { color: var(--green); font-weight: 700; }
+  .diff-neg { color: var(--red); font-weight: 700; }
+  .tag-red { background: #fee2e2; color: #b91c1c; display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+
+  /* MONTH TABS */
+  .month-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .month-tab { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 8px 18px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-muted); transition: all 0.15s; }
+  .month-tab:hover { border-color: var(--navy); color: var(--navy); }
+  .month-tab.active { background: var(--navy); border-color: var(--navy); color: white; }
+
+  /* FIXTURES */
+  .fixtures-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .fixtures-section { background: var(--surface); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); }
+  .fixtures-section h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+  .fixture-item:last-child { border-bottom: none; }
+  .fixture-round { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; min-width: 40px; }
+  .fixture-players { flex: 1; font-size: 13px; font-weight: 600; text-align: center; }
+  .fixture-vs { color: var(--text-muted); font-size: 11px; margin: 0 4px; }
+  .fixture-score { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--navy); min-width: 50px; text-align: center; }
+  .fixture-score .winner { color: var(--red); }
+  .fixture-table-tag { font-size: 10px; background: var(--bg); color: var(--text-muted); padding: 2px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+
+  /* STATS CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .stat-card { background: var(--surface); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); text-align: center; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--navy); }
+  .stat-card.top1::before { background: linear-gradient(90deg, var(--gold), #ffb300); }
+  .stat-card.top2::before { background: var(--silver); }
+  .stat-card.top3::before { background: var(--bronze); }
+  .stat-rank { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .stat-name { font-weight: 700; font-size: 15px; margin-bottom: 12px; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-key { color: var(--text-muted); }
+  .stat-val { font-weight: 700; color: var(--navy); }
+  .empty { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+
+  /* SCHEDULE TABLE */
+  .schedule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .schedule-table th { background: var(--navy); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 14px; text-align: left; }
+  .schedule-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tbody tr:hover { background: var(--bg); }
+  .schedule-table tr.current-month td { background: #fffde7; }
+  .schedule-table tr.current-month td:first-child { border-left: 3px solid var(--gold); }
+  .schedule-table tr.playoffs-row td { background: #f3e5f5; font-style: italic; color: #6a1b9a; font-weight: 600; }
+  .month-label { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); white-space: nowrap; }
+  .month-label.current { color: var(--red); }
+  .rule-text { color: var(--text); }
+  .dress-text { color: var(--text-muted); font-style: italic; }
+
+  @media (max-width: 768px) {
+    .nav { display: none; }
+    .home-grid, .fixtures-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .page { padding: 12px; padding-bottom: 80px; }
+    .home-hero { padding: 20px 16px; margin-bottom: 16px; }
+    .home-hero::before { display: none; }
+    .home-hero h1 { font-size: 28px; }
+    .home-hero p { font-size: 13px; margin-bottom: 14px; }
+    .hero-stats { gap: 10px; }
+    .hero-stat { padding: 10px 12px; min-width: 80px; }
+    .hero-stat-num { font-size: 24px; }
+    body { padding-bottom: 72px; }
+    /* Header */
+    .back-btn { font-size: 11px; padding: 6px 10px; }
+    .brand-title { font-size: 17px; }
+    .brand-sub { font-size: 9px; }
+    .greeting-badge { display: none; }
+    /* Schedule table: scrollable */
+    #schedule-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .schedule-table { min-width: 480px; font-size: 12px; }
+    .schedule-table td, .schedule-table th { padding: 8px 10px; }
+    /* Rankings table */
+    .standings-table { font-size: 12px; }
+    .standings-table th, .standings-table td { padding: 8px 10px; }
+    .player-avatar { width: 28px; height: 28px; font-size: 11px; }
+    /* Fixtures */
+    .fixture-players { font-size: 12px; }
+    /* Stats cards */
+    .stat-card { padding: 14px; }
+    /* Home cards */
+    .home-card { padding: 16px; }
+    .badge-grid { grid-template-columns: 1fr; }
+  }
+  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 2px solid var(--border); padding: 8px 0; z-index: 100; justify-content: space-around; }
+  /* SCHEDULE TABLE */
+  .schedule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .schedule-table th { background: var(--navy); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 14px; text-align: left; }
+  .schedule-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  .schedule-table tr:last-child td { border-bottom: none; }
+  .schedule-table tbody tr:hover { background: var(--bg); }
+  .schedule-table tr.current-month td { background: #fffde7; }
+  .schedule-table tr.current-month td:first-child { border-left: 3px solid var(--gold); }
+  .schedule-table tr.playoffs-row td { background: #f3e5f5; font-style: italic; color: #6a1b9a; font-weight: 600; }
+  .month-label { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; color: var(--navy); white-space: nowrap; }
+  .month-label.current { color: var(--red); }
+  .rule-text { color: var(--text); }
+  .dress-text { color: var(--text-muted); font-style: italic; }
+
+  @media (max-width: 768px) { .mobile-nav { display: flex; } }
+  .mobile-nav-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; cursor: pointer; font-size: 9px; color: var(--text-muted); padding: 4px 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; text-transform: uppercase; text-decoration: none; }
+  .mobile-nav-btn.active { color: var(--navy); }
+  .mobile-nav-icon { font-size: 18px; }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
-League 2026 Dashboard - Coming Soon
+
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html" style="text-decoration:none;">
+      <span style="font-size:28px">🥏</span>
+      <div class="brand-text">
+        <div class="brand-sub">Shuffleboard League</div>
+        <div class="brand-title">League 2026</div>
+      </div>
+    </a>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('home')" id="nav-home">🏠 Home</button>
+      <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings">🏆 Rankings</button>
+      <button class="nav-btn" onclick="showPage('monthly')" id="nav-monthly">📅 Monthly</button>
+      <button class="nav-btn" onclick="showPage('fixtures')" id="nav-fixtures">⚔️ Fixtures</button>
+      <button class="nav-btn" onclick="showPage('stats')" id="nav-stats">📊 Player Stats</button>
+      <button class="nav-btn" onclick="showPage('playoffs')" id="nav-playoffs">🎯 Playoffs</button>
+    </nav>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="index.html" class="back-btn">🏆 All-Time</a>
+      <div class="greeting-badge" id="greeting">🥏 Season 2026</div>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-nav">
+  <button class="mobile-nav-btn active" onclick="showPage('home')" id="mnav-home"><span class="mobile-nav-icon">🏠</span>Home</button>
+  <button class="mobile-nav-btn" onclick="showPage('rankings')" id="mnav-rankings"><span class="mobile-nav-icon">🏆</span>Ranks</button>
+  <button class="mobile-nav-btn" onclick="showPage('monthly')" id="mnav-monthly"><span class="mobile-nav-icon">📅</span>Monthly</button>
+  <button class="mobile-nav-btn" onclick="showPage('fixtures')" id="mnav-fixtures"><span class="mobile-nav-icon">⚔️</span>Fixtures</button>
+  <button class="mobile-nav-btn" onclick="showPage('stats')" id="mnav-stats"><span class="mobile-nav-icon">📊</span>Stats</button>
+  <button class="mobile-nav-btn" onclick="showPage('playoffs')" id="mnav-playoffs"><span class="mobile-nav-icon">🎯</span>Playoffs</button>
+  <a class="mobile-nav-btn" href="index.html"><span class="mobile-nav-icon">🏅</span>All-Time</a>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <h1>LEAGUE 2026</h1>
+    <p>The official season dashboard — live standings, fixtures &amp; player stats</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-players">—</div><div class="hero-stat-label">Players</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-matches">—</div><div class="hero-stat-label">Matches Played</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-sessions">—</div><div class="hero-stat-label">Sessions</div></div>
+
+    </div>
+  </div>
+  <div class="home-card" style="margin-bottom:24px;">
+    <h3>📅 Monthly Schedule</h3>
+    <div id="schedule-table"></div>
+  </div>
+  <div class="home-card" style="margin-bottom:24px;">
+    <h3>🏅 Badges &amp; Penalties</h3><div class="badge-grid" id="badge-grid"></div>
+  </div>
+</div>
+
+<!-- RANKINGS -->
+<div class="page" id="page-rankings">
+  <div class="section-title">🏆 Overall Rankings</div>
+  <div class="section-subtitle">Season 2026 — Win=2pts, Draw=1pt, Loss=0. Penalties deducted.</div>
+  <div id="rankings-table"></div>
+  <div style="background:var(--surface);border-radius:12px;padding:24px;box-shadow:var(--shadow);margin-top:24px;">
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📈 Ranking Evolution</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Position over the season — lower is better. Tap a player to show or hide their line.</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button onclick="chartSelectAll(true)" style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:var(--navy);color:white;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Show All</button>
+      <button onclick="chartSelectAll(false)" style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;background:var(--bg);color:var(--text-muted);border:1px solid var(--border);border-radius:6px;padding:7px 14px;cursor:pointer;">Hide All</button>
+    </div>
+    <div id="chart-toggles" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;"></div>
+    <div style="position:relative;height:600px;">
+      <canvas id="ranking-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY -->
+<div class="page" id="page-monthly">
+  <div class="section-title">📅 Monthly Rankings</div>
+  <div class="section-subtitle">Performance breakdown per session month</div>
+  <div class="month-tabs" id="month-tabs"></div>
+  <div id="monthly-table"></div>
+</div>
+
+<!-- FIXTURES -->
+<div class="page" id="page-fixtures">
+  <div class="section-title">⚔️ Fixtures</div>
+  <div class="section-subtitle">Upcoming and played matches per session</div>
+  <div class="month-tabs" id="fixture-month-tabs"></div>
+  <div class="fixtures-grid">
+    <div class="fixtures-section"><h3>📌 Upcoming</h3><div id="fixtures-upcoming"></div></div>
+    <div class="fixtures-section"><h3>✅ Results</h3><div id="fixtures-played"></div></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="page" id="page-stats">
+  <div class="section-title">📊 Player Stats</div>
+  <div class="section-subtitle">Individual statistics for Season 2026</div>
+  <div id="stats-grid" class="stats-grid"></div>
+</div>
+
+<!-- PLAYOFFS -->
+<div class="page" id="page-playoffs">
+  <div class="section-title">🎯 Playoffs</div>
+  <div class="section-subtitle">Top 7 players qualify — #1 seed gets a bye to the semi-finals</div>
+  <div style="background:var(--surface);border-radius:12px;padding:32px;box-shadow:var(--shadow);">
+    <div id="bracket-content"></div>
+  </div>
+</div>
+
+<script>
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=273978565&single=true&output=csv';
+const BADGES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=1226801861&single=true&output=csv';
+const PROXY = 'https://corsproxy.io/?';
+const BADGE_EMOJI = {PD:'🚔',PL:'⏰',PS:'🔄',PB:'💨',KS:'⚔️',TK:'💥',TG:'✈️',B6:'🪨',WM:'🎩',SU:'🦸',SP:'✨'};
+
+const AVATARS = {
+  "Svenja Vogts":            "svenja_vogts.png",
+  "Quentin Coulon":          "quentin_coulon.png",
+  "John Nnadozie":           "john_nnadozie.png",
+  "Julia Budziak":           "julia_budziak.png",
+  "Bastian Zahn":            "bastian_zahn.png",
+  "Iavosoa Randrianarivelo": "iavosoa_randrianarivelo.png",
+  "Dominik Hantel":          "dominik_hantel.png",
+  "Noémie Lalanne":          "noemie_lalanne.png",
+  "Nicolas Chastenet":       "nicolas_chastenet.png",
+  "Marc Dammann":            "marc_dammann.png",
+  "Daniel Uric":             "daniel_uric.png",
+  "Duy Nguyen":              "duy_nguyen.png",
+  "Vanessa Nieto":           "vanessa_nieto.png",
+  "Marjan Ghobadian":        "marjan_ghobadian.png",
+  "Iga Jagodzinska":         "iga_jagodzinska.png",
+  "Matteo Rodogna":          "matteo_rodogna.png",
+  "Sebastian Heise":         "sebastian_heise.png",
+  "Jose Figueiredo":         "jose_figueiredo.png",
+};
+
+const SCHEDULE = [
+  { month: "January 2026",  num: "2026.01", rule: "Round 1", dress: "Q needs Ammo — everyone needs to wear a hat" },
+  { month: "February 2026", num: "2026.02", rule: "Penalty throw — if a player scratches off one or more opponent's puck, the opponent gets one extra throw", dress: "Sports Jersey — wear your favorite team, or someone else's" },
+  { month: "March 2026",    num: "2026.03", rule: "Opposite hand joker — opponent must throw one round leg with his other hand. Your opponent selects when!", dress: "Honor the Shamrock — wear GREEN! a green top, and if for some reason you have green pants you might as well wear them too." },
+  { month: "April 2026",    num: "2026.04", rule: "Call the shot — 1st throw falls on called number, counts double", dress: "Til death do us part — dress up fancy for a wedding, suit, dress, sari, kimono, whatever you got!" },
+  { month: "May 2026",      num: "2026.05", rule: "Winner takes a shot but all bullets count — all pucks on the table from both players are counted, whoever wins the game gets to drink a shot", dress: "Black Swan — fully black dressed (dark grey allowed)" },
+  { month: "June 2026",     num: "2026.06", rule: "Dead Zone 1 — 1-pointers are dead and removed from the board", dress: "World Cup — wear a country football shirt" },
+  { month: "July 2026",     num: "2026.07", rule: "🏆 PLAYOFFS — Top 7 Players. Single-elimination playoffs. Matches are best-of 3 games to 15 points.", dress: "", playoffs: true },
+];
+
+let EXTRAS = [], APP = {}, curFixMonth = '', curMonthTab = '';
+
+// ── CSV FETCH ─────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = splitLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line => {
+    const cols = splitLine(line).map(c => c.replace(/^"|"$/g,'').trim());
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = cols[i] || ''; });
+    return obj;
+  });
+}
+function splitLine(line) {
+  const cols = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQ = !inQ; }
+    else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+    else { cur += ch; }
+  }
+  cols.push(cur); return cols;
+}
+async function fetchCSV(url) {
+  const proxies = [
+    url,
+    'https://corsproxy.io/?' + encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  ];
+  for (const u of proxies) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(u, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.length > 10) return parseCSV(text);
+    } catch(e) { /* try next */ }
+  }
+  return [];
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const initials = n => n.split(' ').map(p => p[0]).join('').toUpperCase().substring(0,2);
+const avatarEl = (name, size, fontSize) => {
+  size = size || '36px';
+  fontSize = fontSize || '12px';
+  return '<div style="width:' + size + ';height:' + size + ';border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:' + fontSize + ';font-weight:700;color:var(--navy);flex-shrink:0;">' + initials(name) + '</div>';
+};
+const rankBadge = r => `<span class="rank-badge ${r===1?'r1':r===2?'r2':r===3?'r3':''}">${r}</span>`;
+
+function rowToFixture(row) {
+  const monthNum = row['month'] || '';
+  const MONTH_NAMES = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  let month2 = '';
+  if (monthNum) {
+    const parts = monthNum.split('.');
+    month2 = (MONTH_NAMES[parseInt(parts[1])] || '') + ' ' + parts[0];
+  }
+  const sA = row['score A'] !== '' && row['score A'] !== undefined ? row['score A'] : null;
+  const sB = row['score B'] !== '' && row['score B'] !== undefined ? row['score B'] : null;
+  const allCodes = ['PD','PL','PS','PB','KS','TK','TG','B6','WM'];
+  const penCodes = ['PD','PL','PS','PB'];
+  let penA = [], penB = [], badgeA = [], badgeB = [];
+  allCodes.forEach(code => {
+    const val = (row[code] || '').trim().toUpperCase();
+    if (!val) return;
+    const fA = val.includes('A'), fB = val.includes('B');
+    if (penCodes.includes(code)) { if (fA) penA.push(code); if (fB) penB.push(code); }
+    else { if (fA) badgeA.push(code); if (fB) badgeB.push(code); }
+  });
+  return {
+    tournament: row['tournament'] || 'LEAGUE 2026', month: monthNum, month2,
+    round: row['round'] || '', table: row['table'] || '',
+    playerA: row['player A'] || '', playerB: row['player B'] || '',
+    scoreA: sA !== null ? parseFloat(sA) : null,
+    scoreB: sB !== null ? parseFloat(sB) : null,
+    penaltyA: penA.join(','), penaltyB: penB.join(','),
+    badgeA: badgeA.join(','), badgeB: badgeB.join(',')
+  };
+}
+
+// ── COMPUTE STATS ─────────────────────────────────────────────────────────────
+function computeStats(fixtures) {
+  const playerMap = {};
+  const ensureP = name => {
+    const k = name.toLowerCase().trim();
+    if (!playerMap[k]) {
+      playerMap[k] = { player:name, wins:0, losses:0, ties:0, matches_played:0,
+        total_points_scored:0, total_points_against:0, original_league_points:0,
+        penalty_deductions:0, shutouts:0, clutch:0, badges:{} };
+      EXTRAS.forEach(e => { playerMap[k].badges[e.code] = 0; });
+    }
+    return playerMap[k];
+  };
+  fixtures.filter(f => f.scoreA !== null && f.scoreA !== undefined && f.scoreA !== '').forEach(f => {
+    const pA = ensureP(f.playerA), pB = ensureP(f.playerB);
+    const sA = parseInt(f.scoreA), sB = parseInt(f.scoreB);
+    [{p:pA,s:sA,os:sB,pen:f.penaltyA,badge:f.badgeA},{p:pB,s:sB,os:sA,pen:f.penaltyB,badge:f.badgeB}].forEach(({p,s,os,pen,badge}) => {
+      p.matches_played++; p.total_points_scored += s; p.total_points_against += os;
+      if (s > os) { p.wins++; p.original_league_points += 2; }
+      else if (s < os) { p.losses++; }
+      else { p.ties++; p.original_league_points += 1; }
+      if (s === 15 && os === 0) p.shutouts++;
+      if (s === 15 && os === 14) p.clutch++;
+      [pen, badge].forEach(cell => {
+        if (!cell) return;
+        String(cell).split(',').map(c => c.trim().toUpperCase()).forEach(code => {
+          const ex = EXTRAS.find(e => e.code === code);
+          if (!ex) return;
+          if (ex.type === 'PENALTY') p.penalty_deductions++;
+          if (p.badges[code] !== undefined) p.badges[code]++;
+        });
+      });
+    });
+  });
+  return Object.values(playerMap).map(p => {
+    const cleanSlate = p.penalty_deductions === 0 && p.matches_played > 0;
+    p.badges['SP'] = cleanSlate ? 1 : 0;
+    return {
+      ...p,
+      clean_slate: cleanSlate,
+      league_points: p.original_league_points - p.penalty_deductions + (cleanSlate ? 1 : 0),
+      differential: p.total_points_scored - p.total_points_against,
+      win_pct: p.matches_played > 0 ? Math.round(p.wins / p.matches_played * 100) : 0
+    };
+  }).sort((a,b) => (b.league_points - a.league_points) || (b.differential - a.differential))
+    .map((p,i) => ({ranking: i+1, ...p}));
+}
+
+function computeMonthly(fixtures) {
+  const groups = {}, sortKey = {};
+  fixtures.filter(f => f.scoreA !== null && f.scoreA !== undefined && f.scoreA !== '').forEach(f => {
+    const m = f.month2, mn = parseFloat(f.month);
+    if (!groups[m]) { groups[m] = {}; sortKey[m] = mn; }
+    const ensureP = name => {
+      const k = name.toLowerCase().trim();
+      if (!groups[m][k]) groups[m][k] = { player:name, wins:0, losses:0, ties:0,
+        matches_played:0, total_points_scored:0, total_points_against:0,
+        original_league_points:0, penalty_deductions:0 };
+      return groups[m][k];
+    };
+    const sA = parseInt(f.scoreA), sB = parseInt(f.scoreB);
+    const pA = ensureP(f.playerA), pB = ensureP(f.playerB);
+    pA.matches_played++; pB.matches_played++;
+    pA.total_points_scored += sA; pB.total_points_scored += sB;
+    pA.total_points_against += sB; pB.total_points_against += sA;
+    if (sA > sB) { pA.wins++; pA.original_league_points += 2; pB.losses++; }
+    else if (sB > sA) { pB.wins++; pB.original_league_points += 2; pA.losses++; }
+    else { pA.ties++; pA.original_league_points++; pB.ties++; pB.original_league_points++; }
+    [[f.penaltyA, pA],[f.penaltyB, pB]].forEach(([pen, p]) => {
+      if (!pen) return;
+      String(pen).split(',').map(c => c.trim().toUpperCase()).forEach(code => {
+        const ex = EXTRAS.find(e => e.code === code && e.type === 'PENALTY');
+        if (ex) p.penalty_deductions++;
+      });
+    });
+  });
+  const result = {};
+  Object.keys(groups).sort((a,b) => sortKey[a] - sortKey[b]).forEach(month => {
+    result[month] = Object.values(groups[month]).map(p => ({
+      ...p,
+      league_points: p.original_league_points - p.penalty_deductions,
+      differential: p.total_points_scored - p.total_points_against
+    })).sort((a,b) => (b.league_points - a.league_points) || (b.differential - a.differential))
+      .map((p,i) => ({ranking: i+1, ...p}));
+  });
+  return result;
+}
+
+// ── RENDER TABLE ──────────────────────────────────────────────────────────────
+function renderTable(players, monthly=false) {
+  if (!players || !players.length) return '<div class="empty">No data</div>';
+  const colCount = monthly ? 6 : 7;
+  const rows = players.map(p => {
+    const diff = p.differential >= 0
+      ? '<span class="diff-pos">+' + p.differential + '</span>'
+      : '<span class="diff-neg">' + p.differential + '</span>';
+    const penCell = !monthly
+      ? '<td class="num">' + (p.penalty_deductions > 0 ? '<span class="tag-red">-' + p.penalty_deductions + '</span>' : '—') + '</td>'
+      : '';
+    const divider = (!monthly && p.ranking === 7)
+      ? '<tr><td colspan="' + colCount + '" style="padding:0;"><div style="display:flex;align-items:center;gap:10px;padding:6px 16px;background:#f0f4ff;border-top:2px dashed #1a4db5;border-bottom:2px dashed #1a4db5;"><span style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;letter-spacing:1px;color:#1a4db5;text-transform:uppercase;">🎯 Playoff cutoff — Top 7 qualify</span></div></td></tr>'
+      : '';
+    const leaderClass = p.ranking === 1 ? ' leader' : '';
+    return '<tr>'
+      + '<td class="num">' + rankBadge(p.ranking) + '</td>'
+      + '<td><div class="player-cell">' + avatarEl(p.player,'36px','12px') + '<span class="player-name">' + p.player + '</span>' + (p.clean_slate ? '<span title="Spotless — zero penalties" style="font-size:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:2px 8px;margin-left:4px;color:#15803d;font-weight:700;white-space:nowrap;">✨ Spotless</span>' : '') + '</div></td>'
+      + '<td class="num"><span class="pts-chip' + leaderClass + '">' + p.league_points + '</span></td>'
+      + '<td class="num" style="white-space:nowrap;letter-spacing:1px;">' + p.wins + '-' + p.ties + '-' + p.losses + '</td>'
+      + '<td class="num">' + p.matches_played + '</td>'
+      + '<td class="num">' + diff + '</td>'
+      + penCell
+      + '</tr>' + divider;
+  }).join('');
+  return `<table class="standings-table"><thead><tr>
+    <th class="num">#</th><th>Player</th><th class="num">Pts</th>
+    <th class="num">W-D-L</th>
+    <th class="num">MP</th><th class="num">Diff</th>
+    ${!monthly ? '<th class="num">Pen</th>' : ''}
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── RENDER HOME ───────────────────────────────────────────────────────────────
+function renderHome() {
+  const s = APP.stats;
+  document.getElementById('stat-players').textContent = s.length;
+  document.getElementById('stat-matches').textContent = APP.fixtures.filter(f => f.scoreA !== null && f.scoreA !== undefined && f.scoreA !== '').length;
+  document.getElementById('stat-sessions').textContent = Object.keys(APP.monthly).length;
+
+  // Schedule table — using string concat to avoid template literal issues
+  const now = new Date();
+  const currentNum = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0');
+  const scheduleRows = SCHEDULE.map(row => {
+    const isCurrent = row.num === currentNum;
+    const rowClass = row.playoffs ? 'playoffs-row' : isCurrent ? 'current-month' : '';
+    return '<tr class="' + rowClass + '">'
+      + '<td><span class="month-label' + (isCurrent?' current':'') + '">' + row.month + (isCurrent?' 📍':'') + '</span></td>'
+      + '<td><span class="rule-text">' + row.rule + '</span></td>'
+      + '<td><span class="dress-text">' + row.dress + '</span></td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('schedule-table').innerHTML =
+    '<table class="schedule-table"><thead><tr>'
+    + '<th style="width:140px">Month</th>'
+    + '<th>Session Special Rule</th>'
+    + '<th>Dress Code <span style="font-weight:400;opacity:0.7">(shoes not included)</span></th>'
+    + '</tr></thead><tbody>' + scheduleRows + '</tbody></table>';
+
+  // Badges & penalties
+  const allExtras = [...EXTRAS.filter(e => e.type === 'PENALTY'), ...EXTRAS.filter(e => e.type === 'BADGE')];
+  document.getElementById('badge-grid').innerHTML = allExtras.map(e => {
+    const isPen = e.type === 'PENALTY';
+    return '<div class="badge-item ' + (isPen?'penalty-item':'') + '">'
+      + '<span class="badge-icon">' + (BADGE_EMOJI[e.code]||'🏅') + '</span>'
+      + '<div><div class="badge-name">' + e.code + ' — ' + e.name + '</div>'
+      + '<div class="badge-desc">' + e.description + '</div></div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── RENDER RANKINGS ───────────────────────────────────────────────────────────
+function renderRankings() {
+  document.getElementById('rankings-table').innerHTML = renderTable(APP.stats);
+  renderRankingChart();
+}
+
+function renderRankingChart() {
+  // Compute cumulative standings at end of each month
+  const months = Object.keys(APP.monthly);
+  if (months.length === 0) return;
+
+  // Get all players who appear in overall stats
+  const allPlayers = APP.stats.map(p => p.player);
+
+  // For each month, compute cumulative ranking up to and including that month
+  const cumulativeRankings = months.map((month, monthIdx) => {
+    // Use fixtures up to and including this month
+    const monthsUpTo = months.slice(0, monthIdx + 1);
+    const fixturesUpTo = APP.fixtures.filter(f =>
+      f.scoreA !== null && f.scoreA !== undefined && f.scoreA !== '' &&
+      monthsUpTo.includes(f.month2)
+    );
+    // Recompute stats for these fixtures
+    const playerMap = {};
+    const ensureP = name => {
+      const k = name.toLowerCase().trim();
+      if (!playerMap[k]) playerMap[k] = { player:name, wins:0, losses:0, ties:0, matches_played:0, total_points_scored:0, total_points_against:0, original_league_points:0, penalty_deductions:0, badges:{} };
+      EXTRAS.forEach(e => { if (!playerMap[k].badges[e.code]) playerMap[k].badges[e.code] = 0; });
+      return playerMap[k];
+    };
+    fixturesUpTo.forEach(f => {
+      const pA = ensureP(f.playerA), pB = ensureP(f.playerB);
+      const sA = parseInt(f.scoreA), sB = parseInt(f.scoreB);
+      [{p:pA,s:sA,os:sB,pen:f.penaltyA,badge:f.badgeA},{p:pB,s:sB,os:sA,pen:f.penaltyB,badge:f.badgeB}].forEach(({p,s,os,pen,badge}) => {
+        p.matches_played++; p.total_points_scored+=s; p.total_points_against+=os;
+        if(s>os){p.wins++;p.original_league_points+=2;}
+        else if(s<os){p.losses++;}
+        else{p.ties++;p.original_league_points+=1;}
+        [pen,badge].forEach(cell => {
+          if(!cell)return;
+          String(cell).split(',').map(c=>c.trim().toUpperCase()).forEach(code => {
+            const ex=EXTRAS.find(e=>e.code===code);
+            if(!ex)return;
+            if(ex.type==='PENALTY')p.penalty_deductions++;
+            if(p.badges[code]!==undefined)p.badges[code]++;
+          });
+        });
+      });
+    });
+    const ranked = Object.values(playerMap).map(p => {
+      const cs = p.penalty_deductions === 0 && p.matches_played > 0;
+      return { player:p.player, pts: p.original_league_points - p.penalty_deductions + (cs?1:0), diff: p.total_points_scored - p.total_points_against };
+    }).sort((a,b) => (b.pts-a.pts)||(b.diff-a.diff));
+    const rankMap = {};
+    ranked.forEach((p,i) => { rankMap[p.player.toLowerCase().trim()] = i+1; });
+    return rankMap;
+  });
+
+  // Generate a distinct color per player
+  const palette = [
+    '#e63946','#2196f3','#ff9800','#4caf50','#9c27b0',
+    '#00bcd4','#f44336','#3f51b5','#8bc34a','#ff5722',
+    '#607d8b','#e91e63','#009688','#ffc107','#673ab7',
+    '#03a9f4','#cddc39','#795548'
+  ];
+
+  const datasets = allPlayers.map((player, i) => {
+    const data = months.map((_, mi) => {
+      const rank = cumulativeRankings[mi][player.toLowerCase().trim()];
+      return rank || null;
+    });
+    // Only include players who appear in at least one month
+    if (data.every(d => d === null)) return null;
+    const color = palette[i % palette.length];
+    return {
+      label: player.split(' ')[0],
+      data,
+      borderColor: color,
+      backgroundColor: color + '18',
+      borderWidth: 2.5,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      pointBackgroundColor: color,
+      tension: 0.3,
+      spanGaps: false,
+    };
+  }).filter(Boolean);
+
+  // Destroy existing chart if any
+  if (window._rankingChart) window._rankingChart.destroy();
+
+  const ctx = document.getElementById('ranking-chart').getContext('2d');
+  const maxRank = Math.max(...allPlayers.map((_,i) =>
+    Math.max(...cumulativeRankings.map(rm => Object.values(rm).length))
+  ));
+
+  // Build interactive toggle chips
+  const togglesEl = document.getElementById('chart-toggles');
+  if (togglesEl) {
+    togglesEl.innerHTML = datasets.map((ds, i) =>
+      '<button class="chart-toggle" data-idx="' + i + '" onclick="toggleChartPlayer(' + i + ')" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:var(--bg);border:1.5px solid ' + ds.borderColor + ';border-radius:20px;padding:4px 12px;cursor:pointer;color:var(--text);transition:all .15s;">'
+      + '<span style="width:10px;height:10px;border-radius:50%;background:' + ds.borderColor + ';display:inline-block;"></span>'
+      + ds.label + '</button>'
+    ).join('');
+  }
+
+  window._rankingChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: months, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true,
+          min: 1,
+          max: maxRank,
+          ticks: {
+            stepSize: 1,
+            font: { family: 'Barlow Condensed', size: 12, weight: '700' },
+            color: '#6b7280',
+            callback: val => '#' + val,
+          },
+          grid: { color: '#e0e4ef' },
+          title: { display: true, text: 'Ranking (lower = better)', font: { family: 'Barlow Condensed', size: 12, weight: '700' }, color: '#6b7280' }
+        },
+        x: {
+          ticks: { font: { family: 'Barlow Condensed', size: 12, weight: '700' }, color: '#6b7280' },
+          grid: { color: '#e0e4ef' }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.dataset.label + ': #' + ctx.parsed.y
+          }
+        }
+      },
+      interaction: { mode: 'index', intersect: false },
+    }
+  });
+}
+
+// ── RENDER MONTHLY ────────────────────────────────────────────────────────────
+function toggleChartPlayer(idx) {
+  const chart = window._rankingChart;
+  if (!chart) return;
+  const meta = chart.getDatasetMeta(idx);
+  meta.hidden = meta.hidden === null ? !chart.data.datasets[idx].hidden : !meta.hidden;
+  chart.update();
+  // Update chip appearance
+  const btn = document.querySelector('.chart-toggle[data-idx="' + idx + '"]');
+  if (btn) {
+    if (meta.hidden) {
+      btn.style.opacity = '0.4';
+      btn.style.background = 'var(--bg)';
+    } else {
+      btn.style.opacity = '1';
+      btn.style.background = chart.data.datasets[idx].borderColor + '18';
+    }
+  }
+}
+
+function chartSelectAll(show) {
+  const chart = window._rankingChart;
+  if (!chart) return;
+  chart.data.datasets.forEach((ds, idx) => {
+    const meta = chart.getDatasetMeta(idx);
+    meta.hidden = !show;
+    const btn = document.querySelector('.chart-toggle[data-idx="' + idx + '"]');
+    if (btn) {
+      btn.style.opacity = show ? '1' : '0.4';
+      btn.style.background = show ? (ds.borderColor + '18') : 'var(--bg)';
+    }
+  });
+  chart.update();
+}
+
+function renderMonthly() {
+  const months = Object.keys(APP.monthly);
+  curMonthTab = months[months.length - 1];
+  document.getElementById('month-tabs').innerHTML = months.map(m =>
+    `<button class="month-tab${m === curMonthTab ? ' active' : ''}" onclick="selMonth('${m}')">${m}</button>`).join('');
+  renderMonthlyTable();
+}
+function selMonth(m) {
+  curMonthTab = m;
+  document.querySelectorAll('#month-tabs .month-tab').forEach(b => b.classList.toggle('active', b.textContent === m));
+  renderMonthlyTable();
+}
+function renderMonthlyTable() {
+  document.getElementById('monthly-table').innerHTML = renderTable(APP.monthly[curMonthTab] || [], true);
+}
+
+// ── RENDER FIXTURES ───────────────────────────────────────────────────────────
+function renderFixtures() {
+  const months = [...new Set(APP.fixtures.map(f => f.month2))];
+  document.getElementById('fixture-month-tabs').innerHTML = months.map(m =>
+    `<button class="month-tab${m === curFixMonth ? ' active' : ''}" onclick="selFixMonth('${m}')">${m}</button>`).join('');
+  renderFixMonth();
+}
+function selFixMonth(m) {
+  curFixMonth = m;
+  document.querySelectorAll('#fixture-month-tabs .month-tab').forEach(b => b.classList.toggle('active', b.textContent === m));
+  renderFixMonth();
+}
+function renderFixMonth() {
+  const mf = APP.fixtures.filter(f => f.month2 === curFixMonth);
+  const played = mf.filter(f => f.scoreA !== null && f.scoreA !== undefined && f.scoreA !== '');
+  const upcoming = mf.filter(f => f.scoreA === null || f.scoreA === undefined || f.scoreA === '');
+  document.getElementById('fixtures-upcoming').innerHTML = upcoming.length
+    ? upcoming.map(f => `<div class="fixture-item">
+        <span class="fixture-round">${f.round.replace('Round ','R')}</span>
+        <div class="fixture-players">${f.playerA} <span class="fixture-vs">vs</span> ${f.playerB}</div>
+        <span class="fixture-table-tag">${f.table}</span>
+      </div>`).join('')
+    : '<div class="empty">All matches played!</div>';
+  document.getElementById('fixtures-played').innerHTML = played.length
+    ? played.map(f => {
+        const aW = parseInt(f.scoreA) > parseInt(f.scoreB);
+        const bW = parseInt(f.scoreB) > parseInt(f.scoreA);
+        return `<div class="fixture-item">
+          <span class="fixture-round">${f.round.replace('Round ','R')}</span>
+          <div class="fixture-players">
+            <span style="${aW ? 'font-weight:800' : ''}">${f.playerA}</span>
+            <span class="fixture-vs">vs</span>
+            <span style="${bW ? 'font-weight:800' : ''}">${f.playerB}</span>
+          </div>
+          <div class="fixture-score">
+            <span class="${aW ? 'winner' : ''}">${f.scoreA}</span>–<span class="${bW ? 'winner' : ''}">${f.scoreB}</span>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No matches played yet</div>';
+}
+
+// ── RENDER PLAYER STATS ───────────────────────────────────────────────────────
+function renderPlayerStats() {
+  document.getElementById('stats-grid').innerHTML = APP.stats.map(p => {
+    const tc = p.ranking === 1 ? 'top1' : p.ranking === 2 ? 'top2' : p.ranking === 3 ? 'top3' : '';
+    const earnedBadges = EXTRAS.filter(e => e.type === 'BADGE' && p.badges[e.code] > 0)
+      .map(e => BADGE_EMOJI[e.code] || '🏅').join('');
+    const penStr = p.penalty_deductions > 0
+      ? '<div class="stat-row"><span class="stat-key">Penalties</span><span class="stat-val" style="color:var(--red)">-' + p.penalty_deductions + '</span></div>'
+      : '';
+    const badgeStr = earnedBadges
+      ? '<div style="margin-top:8px;font-size:18px;">' + earnedBadges + '</div>'
+      : '';
+    const diffColor = p.differential >= 0 ? 'var(--green)' : 'var(--red)';
+    const diffVal = (p.differential >= 0 ? '+' : '') + p.differential;
+    const avatar = avatarEl(p.player, '72px', '22px');
+    return '<div class="stat-card ' + tc + '">'
+      + '<div class="stat-rank">#' + p.ranking + (p.ranking === 1 ? ' 👑' : '') + '</div>'
+      + '<div style="margin:0 auto 8px;width:72px;height:72px;">' + avatar + '</div>'
+      + '<div class="stat-name">' + p.player + '</div>'
+      + '<div class="stat-row"><span class="stat-key">League Points</span><span class="stat-val">' + p.league_points + '</span></div>'
+      + '<div class="stat-row"><span class="stat-key">W / D / L</span><span class="stat-val">' + p.wins + '/' + p.ties + '/' + p.losses + '</span></div>'
+      + '<div class="stat-row"><span class="stat-key">Win %</span><span class="stat-val">' + p.win_pct + '%</span></div>'
+      + '<div class="stat-row"><span class="stat-key">Differential</span><span class="stat-val" style="color:' + diffColor + '">' + diffVal + '</span></div>'
+      + '<div class="stat-row"><span class="stat-key">Shutouts</span><span class="stat-val">' + p.shutouts + '</span></div>'
+      + '<div class="stat-row"><span class="stat-key">Clutch (15-14)</span><span class="stat-val">' + p.clutch + '</span></div>'
+      + penStr + badgeStr
+      + '</div>';
+  }).join('');
+}
+
+// ── RENDER PLAYOFFS ───────────────────────────────────────────────────────────
+function renderPlayoffs() {
+  const top7 = APP.stats.slice(0, 7);
+
+  const slot = (idx, bye=false, label='') => {
+    const p = idx !== null ? top7[idx] : null;
+    if (p) {
+      const bg = bye ? '#fffde7' : 'var(--surface)';
+      const border = bye ? '2px solid var(--gold)' : '1.5px solid var(--border)';
+      return '<div style="background:' + bg + ';border:' + border + ';border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);">'
+        + '<span style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;color:var(--text-muted);min-width:22px;">#' + p.ranking + '</span>'
+        + '<div style="width:32px;height:32px;border-radius:50%;background:' + (bye?'var(--gold)':'var(--navy)') + ';color:' + (bye?'#5a3e00':'white') + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">' + initials(p.player) + '</div>'
+        + '<span style="font-weight:700;font-size:14px;flex:1;">' + p.player.split(' ')[0] + '</span>'
+        + (bye ? '<span style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;color:#b8860b;text-transform:uppercase;">BYE</span>' : '')
+        + '<span style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--text-muted);">' + p.league_points + 'p</span>'
+        + '</div>';
+    }
+    return '<div style="border:1.5px dashed var(--border);border-radius:10px;padding:10px 14px;background:var(--bg);text-align:center;color:var(--text-muted);font-size:13px;font-style:italic;">' + (label||'TBD') + '</div>';
+  };
+
+  const vs = '<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-muted);padding:5px 0;">vs</div>';
+  const matchBox = (a, b) =>
+    '<div style="background:var(--bg);border-radius:14px;padding:10px;">' + a + vs + b + '</div>';
+
+  const colTitle = (text, color) =>
+    '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:white;background:' + color + ';padding:6px 12px;border-radius:6px;text-align:center;margin-bottom:14px;">' + text + '</div>';
+
+  document.getElementById('bracket-content').innerHTML =
+    // Seedings
+    '<div style="margin-bottom:28px;">'
+    + '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);">🌱 Current Seedings</div>'
+    + top7.map(p => '<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);">'
+        + rankBadge(p.ranking)
+        + '<div style="width:30px;height:30px;border-radius:50%;background:var(--navy);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">' + initials(p.player) + '</div>'
+        + '<span style="font-weight:600;font-size:14px;flex:1;">' + p.player + '</span>'
+        + '<span class="pts-chip">' + p.league_points + 'pts</span>'
+        + '</div>').join('')
+    + '</div>'
+
+    // Bracket — 3 columns side by side, each match a self-contained box, NO connector lines
+    + '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;min-width:680px;align-items:start;">'
+
+      // Column 1: Quarter-Finals
+      + '<div>'
+        + colTitle('Quarter-Finals', '#1a4db5')
+        + '<div style="display:flex;flex-direction:column;gap:16px;">'
+          + matchBox(slot(3), slot(4))
+          + matchBox(slot(2), slot(5))
+          + matchBox(slot(1), slot(6))
+        + '</div>'
+      + '</div>'
+
+      // Column 2: Semi-Finals
+      + '<div>'
+        + colTitle('Semi-Finals', '#7b1fa2')
+        + '<div style="display:flex;flex-direction:column;gap:16px;padding-top:40px;">'
+          + matchBox(slot(0, true), slot(null, false, 'QF1 Winner'))
+          + matchBox(slot(null, false, 'QF2 Winner'), slot(null, false, 'QF3 Winner'))
+        + '</div>'
+      + '</div>'
+
+      // Column 3: Final + Champion
+      + '<div>'
+        + colTitle('Final', 'var(--red)')
+        + '<div style="padding-top:90px;">'
+          + matchBox(slot(null, false, 'SF1 Winner'), slot(null, false, 'SF2 Winner'))
+          + '<div style="background:linear-gradient(135deg,var(--gold),#ffb300);border-radius:14px;padding:20px;text-align:center;margin-top:16px;">'
+            + '<div style="font-size:32px;margin-bottom:4px;">🏆</div>'
+            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;color:#5a3e00;text-transform:uppercase;letter-spacing:1px;">Champion</div>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+
+    + '</div>'
+    + '</div>'
+
+    // 3rd place match
+    + '<div style="margin-top:28px;padding-top:24px;border-top:2px dashed var(--border);">'
+      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">'
+        + '<span style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:white;background:var(--bronze);padding:6px 12px;border-radius:6px;">🥉 3rd Place Match</span>'
+        + '<span style="font-size:13px;color:var(--text-muted);">Semi-final losers play for 3rd</span>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start;">'
+        + '<div>' + matchBox(slot(null, false, 'SF1 Loser'), slot(null, false, 'SF2 Loser')) + '</div>'
+        + '<div style="display:flex;align-items:center;justify-content:center;padding-top:30px;">'
+          + '<div style="background:linear-gradient(135deg,var(--bronze),#e0a060);border-radius:14px;padding:18px 24px;text-align:center;">'
+            + '<div style="font-size:26px;margin-bottom:2px;">🥉</div>'
+            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:1px;">3rd Place</div>'
+          + '</div>'
+        + '</div>'
+        + '<div></div>'
+      + '</div>'
+    + '</div>'
+
+    // Final standings
+    + '<div style="margin-top:28px;padding-top:24px;border-top:2px dashed var(--border);">'
+      + '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">🏅 Final Standings</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">'
+        + [
+            {place:'Champion',emoji:'🥇',bg:'linear-gradient(135deg,var(--gold),#ffb300)',col:'#5a3e00'},
+            {place:'Runner-up',emoji:'🥈',bg:'linear-gradient(135deg,var(--silver),#90a4ae)',col:'#2d3748'},
+            {place:'3rd Place',emoji:'🥉',bg:'linear-gradient(135deg,var(--bronze),#e0a060)',col:'white'},
+            {place:'4th Place',emoji:'4️⃣',bg:'var(--bg)',col:'var(--text)',border:true},
+          ].map(s =>
+            '<div style="border:1.5px dashed var(--border);border-radius:12px;padding:14px;text-align:center;background:var(--bg);">'
+            + '<div style="font-size:22px;margin-bottom:4px;opacity:0.4;">' + s.emoji + '</div>'
+            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">' + s.place + '</div>'
+            + '<div style="font-size:11px;color:var(--text-muted);font-style:italic;">To be determined</div>'
+            + '</div>'
+          ).join('')
+      + '</div>'
+    + '</div>'
+
+    + '<div style="margin-top:20px;background:#fff8e1;border:1px solid var(--gold);border-radius:8px;padding:12px 16px;font-size:13px;">'
+      + '<strong>📌 Note:</strong> Seedings update automatically from live standings. #1 seed gets a bye to the semi-finals.'
+    + '</div>';
+}
+
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn,.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  ['nav-' + p, 'mnav-' + p].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('active'); });
+  window.scrollTo(0, 0);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  const hour = new Date().getHours();
+  document.getElementById('greeting').textContent = (hour < 12 ? '☕ Good morning' : hour < 17 ? '☀️ Good afternoon' : '🌙 Good evening') + ', Shuffler!';
+
+  const results = await Promise.allSettled([
+    fetchCSV(SHEET_CSV), fetchCSV(BADGES_CSV)
+  ]);
+  const fixtureRows = results[0].status === 'fulfilled' ? results[0].value : [];
+  const badgeRows = results[1].status === 'fulfilled' ? results[1].value : [];
+
+  if (!fixtureRows || !fixtureRows.length) {
+    ['rankings-table','monthly-table','stats-grid'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="empty" style="padding:20px;">⚠️ Could not load data. Please refresh.</div>';
+    });
+  }
+
+  // Build EXTRAS from badges sheet
+  (badgeRows || []).forEach(r => {
+    if (!r.CODE) return;
+    EXTRAS.push({
+      code: r.CODE.trim().toUpperCase(),
+      type: (r.TYPE || '').trim().toUpperCase(),
+      name: (r.NAME || r.CODE).replace(/_/g, ' '),
+      description: r.DESCRIPTION || ''
+    });
+  });
+
+  // Ensure Clean Slate badge is always defined even if not in the sheet
+  if (!EXTRAS.find(e => e.code === 'SP')) {
+    EXTRAS.push({ code: 'SP', type: 'BADGE', name: 'Spotless', description: 'Completed the season with zero penalties — earns +1 bonus point' });
+  }
+
+  const fixtures = fixtureRows
+    .filter(r => r['player A'] && r['player B'] && r['tournament'] === 'LEAGUE 2026')
+    .map(rowToFixture);
+
+  const unplayed = fixtures.filter(f => f.scoreA === null || f.scoreA === undefined || f.scoreA === '');
+  curFixMonth = unplayed.length > 0 ? unplayed[0].month2 : (fixtures.length > 0 ? fixtures[fixtures.length-1].month2 : '');
+
+  APP.stats = computeStats(fixtures);
+  APP.monthly = computeMonthly(fixtures);
+  APP.fixtures = fixtures;
+
+  renderHome();
+  renderRankings();
+  renderMonthly();
+  renderFixtures();
+  renderPlayerStats();
+  renderPlayoffs();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Auto-refresh every 5 minutes to pick up new scores from Google Sheets
+setInterval(() => location.reload(), 5 * 60 * 1000);
+</script>
 </body>
 </html>
