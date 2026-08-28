@@ -213,6 +213,111 @@
     margin-bottom: 24px;
   }
   
+  .rankings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 56px;
+  }
+
+  .ranking-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ranking-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,45,128,0.15);
+  }
+
+  .ranking-box.disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .ranking-box.disabled:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+
+  .ranking-top {
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+  }
+
+  .ranking-top.shuffleboard {
+    background: #ff6b35;
+  }
+
+  .ranking-top.petanque {
+    background: #2e7d32;
+  }
+
+  .ranking-top.darts {
+    background: #7c4dff;
+  }
+
+  .ranking-icon {
+    font-size: 28px;
+  }
+
+  .ranking-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.25);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  .ranking-body {
+    padding: 20px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ranking-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .ranking-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+    flex: 1;
+  }
+
+  .ranking-cta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+
+  .ranking-box.disabled .ranking-cta {
+    color: var(--text-muted);
+  }
+
   .filters {
     display: flex;
     gap: 12px;
@@ -416,6 +521,10 @@
     .section-title {
       font-size: 24px;
     }
+
+    .rankings-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
@@ -448,6 +557,49 @@
 
 <div class="main">
   <div class="section-header">
+    <div class="section-label">🏆 Hall of Fame</div>
+    <h2 class="section-title">All-Time Rankings</h2>
+  </div>
+
+  <div class="rankings-grid">
+    <a class="ranking-box" href="shuffleboard_all_time.html">
+      <div class="ranking-top shuffleboard">
+        <div class="ranking-icon">🥏</div>
+        <div class="ranking-badge">Shuffleboard</div>
+      </div>
+      <div class="ranking-body">
+        <h3 class="ranking-title">Shuffleboard All-Time</h3>
+        <p class="ranking-desc">Historical rankings across every shuffleboard tournament and match ever played.</p>
+        <div class="ranking-cta">View Rankings →</div>
+      </div>
+    </a>
+
+    <div class="ranking-box disabled">
+      <div class="ranking-top petanque">
+        <div class="ranking-icon">🎯</div>
+        <div class="ranking-badge">Petanque</div>
+      </div>
+      <div class="ranking-body">
+        <h3 class="ranking-title">Petanque All-Time</h3>
+        <p class="ranking-desc">All-time rankings for the pétanque league. Coming soon.</p>
+        <div class="ranking-cta">Coming Soon</div>
+      </div>
+    </div>
+
+    <div class="ranking-box disabled">
+      <div class="ranking-top darts">
+        <div class="ranking-icon">🎱</div>
+        <div class="ranking-badge">Darts</div>
+      </div>
+      <div class="ranking-body">
+        <h3 class="ranking-title">Darts All-Time</h3>
+        <p class="ranking-desc">All-time rankings for the darts league. Coming soon.</p>
+        <div class="ranking-cta">Coming Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
     <div class="section-label">📋 The Calendar</div>
     <h2 class="section-title">Events</h2>
   </div>
@@ -467,18 +619,6 @@
 <script>
 const tournaments = [
   {
-    id: 'sb-alltime',
-    sport: 'shuffleboard',
-    icon: '🥏',
-    title: 'All-Time Rankings',
-    date: 'Ongoing',
-    status: 'open',
-    location: 'All-Time Records',
-    description: 'Historical rankings from every tournament and match ever played.',
-    teams: 'Multiple tournaments',
-    link: 'shuffleboard_all_time.html'
-  },
-  {
     id: 'sb-2026',
     sport: 'shuffleboard',
     icon: '🥏',
@@ -489,54 +629,6 @@ const tournaments = [
     description: 'The 2026 seasonal shuffleboard league with monthly tournaments and playoffs.',
     teams: 'Teams TBD',
     link: 'league2026.html'
-  },
-  {
-    id: 'pe-classic',
-    sport: 'petanque',
-    icon: '🎯',
-    title: 'Autumn Pétanque Classic',
-    date: 'Oct 19',
-    status: 'open',
-    location: 'Templefield Courts, Spain',
-    description: 'A relaxed but competitive weekend tournament on the open-air Templefield courts.',
-    teams: 'Triples · 24 teams',
-    link: '#'
-  },
-  {
-    id: 'sb-summer',
-    sport: 'shuffleboard',
-    icon: '🥏',
-    title: 'Summer Slide Open',
-    date: 'Sep 12',
-    status: 'coming-soon',
-    location: 'Harbor Sports Hall, Hamburg',
-    description: 'A two-day open doubles tournament welcoming experienced players and rising local teams.',
-    teams: 'Open doubles · 32 teams',
-    link: '#'
-  },
-  {
-    id: 'darts-championship',
-    sport: 'darts',
-    icon: '🎱',
-    title: 'City Darts Championship',
-    date: 'Nov 2',
-    status: 'coming-soon',
-    location: 'Central Social Club, Frankfurt',
-    description: 'The annual city championship brings together 64 players for a full day of knockout darts.',
-    teams: '501 Singles · 64 players',
-    link: '#'
-  },
-  {
-    id: 'sb-masters',
-    sport: 'shuffleboard',
-    icon: '🥏',
-    title: 'Northern Board Masters',
-    date: 'Oct 24',
-    status: 'open',
-    location: 'The Long Table, Bremen',
-    description: 'Two days of deck shuffleboard featuring separate angles and doubles divisions.',
-    teams: 'Singles & doubles',
-    link: '#'
   }
 ];
 
