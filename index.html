@@ -496,6 +496,11 @@
     background: #ff9800;
     color: white;
   }
+
+  .event-status.completed {
+    background: var(--text-muted);
+    color: white;
+  }
   
   .event-body {
     padding: 24px;
@@ -706,6 +711,30 @@ const tournaments = [
     description: 'The 2026 seasonal shuffleboard league with monthly tournaments and playoffs.',
     teams: 'Teams TBD',
     link: 'league2026.html'
+  },
+  {
+    id: 'sb-deathmatch',
+    sport: 'shuffleboard',
+    icon: '💀',
+    title: 'Deathmatch',
+    date: 'Completed',
+    status: 'completed',
+    location: 'Various Venues',
+    description: 'A knockout team tournament — every match counted, no second chances.',
+    teams: 'Teams',
+    link: 'deathmatch.html'
+  },
+  {
+    id: 'sb-marchmadness',
+    sport: 'shuffleboard',
+    icon: '🏀',
+    title: 'March Madness',
+    date: 'Completed',
+    status: 'completed',
+    location: 'Various Venues',
+    description: "A team tournament played across the season's shortest, fastest month.",
+    teams: 'Teams',
+    link: 'marchmadness.html'
   }
 ];
 
