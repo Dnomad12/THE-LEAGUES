@@ -4,22 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Leagues — Tournament Board</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --red: #d32f2f;
-    --navy: #002d80;
-    --navy-light: #1a4db5;
+    --navy: #10224d;
+    --navy-light: #2954c8;
     --gold: #f5c518;
     --silver: #b0b8c5;
     --bronze: #cd7f32;
-    --dark-bg: #0d1b2a;
+    --bg: #faf6ee;
     --card-bg: #ffffff;
-    --border: #e0e4ef;
-    --text: #1a1f2e;
-    --text-muted: #6b7280;
+    --border: #e7e0d0;
+    --text: #1a2138;
+    --text-muted: #767b8a;
     --green: #16a34a;
-    --shadow: 0 2px 12px rgba(0,45,128,0.10);
+    --shadow: 0 4px 18px rgba(16,34,77,0.07);
   }
   
   * {
@@ -30,15 +30,15 @@
   
   body {
     font-family: 'Barlow', sans-serif;
-    background: var(--dark-bg);
+    background: var(--bg);
     color: var(--text);
     min-height: 100vh;
   }
   
   .header {
-    background: var(--dark-bg);
-    border-bottom: 2px solid rgba(245, 197, 24, 0.3);
-    padding: 24px 0;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -82,26 +82,6 @@
     text-transform: uppercase;
   }
   
-  .header-btn {
-    background: var(--gold);
-    color: var(--navy);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .header-btn:hover {
-    background: #ffd700;
-    transform: translateY(-2px);
-  }
-  
   .hero {
     background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 50%, #1a3a52 100%);
     color: white;
@@ -111,14 +91,44 @@
     overflow: hidden;
   }
   
-  .hero::before {
-    content: '🏆';
+  .hero-graphic {
     position: absolute;
-    right: 40px;
+    right: 60px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 120px;
-    opacity: 0.08;
+    display: flex;
+    align-items: center;
+    z-index: 0;
+  }
+
+  .hero-orb {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255,255,255,0.18);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.28);
+  }
+
+  .hero-orb.shuffleboard {
+    background: #ff6b35;
+    transform: translateY(-26px);
+    margin-right: -22px;
+    z-index: 3;
+  }
+
+  .hero-orb.petanque {
+    background: #2e7d32;
+    z-index: 2;
+  }
+
+  .hero-orb.darts {
+    background: #7c4dff;
+    transform: translateY(26px);
+    margin-left: -22px;
+    z-index: 1;
   }
   
   .hero-content {
@@ -171,9 +181,9 @@
   }
   
   .hero-stat-num {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 32px;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--gold);
   }
   
@@ -221,9 +231,9 @@
   }
 
   .ranking-box {
-    background: var(--card-bg);
+    background: transparent;
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
     text-decoration: none;
@@ -234,7 +244,7 @@
 
   .ranking-box:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,45,128,0.15);
+    box-shadow: 0 10px 28px rgba(16,34,77,0.14);
   }
 
   .ranking-box.disabled {
@@ -253,7 +263,25 @@
     align-items: center;
     justify-content: space-between;
     color: white;
+    position: relative;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 2px dashed rgba(255,255,255,0.4);
   }
+
+  .ranking-top::before,
+  .ranking-top::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    width: 16px;
+    height: 16px;
+    background: var(--bg);
+    border-radius: 50%;
+    z-index: 2;
+  }
+
+  .ranking-top::before { left: -8px; }
+  .ranking-top::after { right: -8px; }
 
   .ranking-top.shuffleboard {
     background: #ff6b35;
@@ -290,6 +318,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    background: var(--card-bg);
+    border-radius: 0 0 12px 12px;
   }
 
   .ranking-title {
@@ -363,10 +393,11 @@
   .event-card {
     background: var(--card-bg);
     border-radius: 12px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
     display: none;
+    position: relative;
   }
   
   .event-card.active {
@@ -375,16 +406,49 @@
   
   .event-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,45,128,0.15);
+    box-shadow: 0 10px 28px rgba(16,34,77,0.14);
   }
   
+  .event-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 12px 12px 0 0;
+    background: var(--navy);
+  }
+
+  .event-card.shuffleboard::before { background: #ff6b35; }
+  .event-card.petanque::before { background: #2e7d32; }
+  .event-card.darts::before { background: #7c4dff; }
+
   .event-header {
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
+    padding: 20px 20px 16px;
+    border-bottom: 2px dashed var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 12px 12px 0 0;
   }
+
+  .event-header::before,
+  .event-header::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    width: 16px;
+    height: 16px;
+    background: var(--bg);
+    border-radius: 50%;
+    z-index: 2;
+  }
+
+  .event-header::before { left: -8px; }
+  .event-header::after { right: -8px; }
   
   .event-sport {
     font-family: 'Barlow Condensed', sans-serif;
@@ -435,13 +499,15 @@
   
   .event-body {
     padding: 24px;
+    background: var(--card-bg);
+    border-radius: 0 0 12px 12px;
   }
   
   .event-date {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--red);
     margin-bottom: 8px;
@@ -512,6 +578,10 @@
     .hero h2 {
       font-size: 32px;
     }
+
+    .hero-graphic {
+      display: none;
+    }
     
     .main {
       padding: 24px 24px;
@@ -542,15 +612,19 @@
         <div class="brand-sub">Multi-sport tournaments</div>
       </div>
     </a>
-    <button class="header-btn" onclick="document.getElementById('allTournaments').click()">All Tournaments</button>
   </div>
 </header>
 
 <div class="hero">
+  <div class="hero-graphic" aria-hidden="true">
+    <div class="hero-orb shuffleboard"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3 L21 21 L3 21 Z"/><path d="M7.2 21 L12 11.5 L16.8 21"/></svg></div>
+    <div class="hero-orb petanque"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" stroke-width="1.6"><circle cx="8" cy="14.5" r="5"/><circle cx="16" cy="14.5" r="5"/><circle cx="12" cy="5.5" r="1.6" fill="white" stroke="none"/></svg></div>
+    <div class="hero-orb darts"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="white" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.8" fill="white" stroke="none"/></svg></div>
+  </div>
   <div class="hero-content">
     <div class="hero-badge">🏛️ Tournament Season</div>
-    <h2>Find your next <em>great match.</em></h2>
-    <p>Shuffleboard, petanque, and darts from your community gathered in one tournament calendar.</p>
+    <h2>One home for <em>every league.</em></h2>
+    <p>Tournaments, rankings, and results from your community's leagues, all tracked in one place.</p>
     <div class="hero-stat">
       <div class="hero-stat-num" id="total-tournaments">6</div>
       <div class="hero-stat-label">Tournaments Listed</div>
@@ -643,9 +717,9 @@ function renderTournaments(filter = 'all') {
   
   filtered.forEach(tournament => {
     const card = document.createElement('div');
-    card.className = 'event-card active';
-    
     const sportClass = tournament.sport.toLowerCase();
+    card.className = `event-card active ${sportClass}`;
+    
     const statusClass = tournament.status.replace('-', '-');
     
     card.innerHTML = `
