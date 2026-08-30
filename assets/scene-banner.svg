@@ -1,0 +1,53 @@
+<svg width="680" height="240" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="680" height="240" rx="16" fill="#f5f0e8"/>
+<g fill="#e07a52" opacity="0.55">
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(0 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(30 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(60 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(90 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(120 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(150 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(180 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(210 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(240 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(270 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(300 560 68)"/>
+<path d="M560 14 L565 30 L555 30 Z" transform="rotate(330 560 68)"/>
+</g>
+<circle cx="560" cy="68" r="36" fill="#e07a52" opacity="0.9"/>
+<g>
+<rect x="86" y="158" width="5" height="22" fill="#6b5535"/>
+<path d="M88.5 36 C 70 70, 72 120, 80 158 L 97 158 C 105 120, 107 70, 88.5 36 Z" fill="#3d5230"/>
+<path d="M88.5 36 C 80 72, 80 120, 84 156 L 88.5 156 C 90 110, 90 70, 88.5 36 Z" fill="#4a5e3a" opacity="0.7"/>
+</g>
+<g>
+<rect x="126" y="170" width="4" height="18" fill="#6b5535"/>
+<path d="M128 64 C 113 92, 114 140, 121 170 L 135 170 C 142 140, 143 92, 128 64 Z" fill="#4a5e3a"/>
+<path d="M128 64 C 121 94, 121 140, 124 168 L 128 168 C 130 130, 130 92, 128 64 Z" fill="#566d44" opacity="0.7"/>
+</g>
+<g>
+<rect x="166" y="162" width="5" height="20" fill="#6b5535"/>
+<path d="M168.5 44 C 151 76, 152 128, 160 162 L 177 162 C 185 128, 186 76, 168.5 44 Z" fill="#3d5230"/>
+<path d="M168.5 44 C 160 78, 160 128, 164 160 L 168.5 160 C 170 116, 170 76, 168.5 44 Z" fill="#4a5e3a" opacity="0.7"/>
+</g>
+<rect x="0" y="172" width="680" height="68" fill="#e8dfc9"/>
+<rect x="0" y="172" width="680" height="68" fill="#e0d5ba" opacity="0.5"/>
+<ellipse cx="340" cy="206" rx="300" ry="24" fill="#d4c9a8" opacity="0.5"/>
+<circle cx="300" cy="202" r="22" fill="#c8ccd3"/>
+<circle cx="300" cy="202" r="22" fill="none" stroke="#9a9ea6" stroke-width="1"/>
+<ellipse cx="291" cy="194" rx="7" ry="4" fill="#eef0f3" opacity="0.7"/>
+<path d="M300 180 A22 22 0 0 1 318 212" fill="none" stroke="#b0b4bc" stroke-width="1" opacity="0.6"/>
+<circle cx="350" cy="212" r="26" fill="#dfe2e7"/>
+<circle cx="350" cy="212" r="26" fill="none" stroke="#a8acb4" stroke-width="1"/>
+<ellipse cx="339" cy="201" rx="8" ry="5" fill="#fff" opacity="0.75"/>
+<path d="M350 186 A26 26 0 0 1 372 224" fill="none" stroke="#c4c8cf" stroke-width="1" opacity="0.6"/>
+<circle cx="326" cy="224" r="7" fill="#f5c518"/>
+<circle cx="326" cy="224" r="7" fill="none" stroke="#c99a00" stroke-width="1"/>
+<g opacity="0.85">
+<circle cx="455" cy="197" r="17" fill="#d0d4db"/>
+<circle cx="455" cy="197" r="17" fill="none" stroke="#a0a4ac" stroke-width="1"/>
+<ellipse cx="449" cy="191" rx="5" ry="3" fill="#eef0f3" opacity="0.7"/>
+</g>
+<text x="210" y="62" font-family="Georgia, serif" font-size="26" font-weight="700" fill="#2d3d22">Allez, on tire ou on pointe?</text>
+<text x="210" y="90" font-family="Inter, sans-serif" font-size="14" fill="#7a6e5e">The southern art of getting closest to the cochonnet.</text>
+</svg>

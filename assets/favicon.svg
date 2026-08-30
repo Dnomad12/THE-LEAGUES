@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(32,32)">
+    <g fill="#c0532a">
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(0)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(45)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(90)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(135)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(180)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(225)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(270)"/>
+      <path d="M0 -30 L4 -20 L-4 -20 Z" transform="rotate(315)"/>
+    </g>
+    <circle r="18" fill="#4a5e3a"/>
+    <circle cx="-5" cy="2" r="7" fill="#c8ccd3"/>
+    <circle cx="5" cy="-1" r="8" fill="#e2e5ea"/>
+    <ellipse cx="2" cy="-4" rx="2.5" ry="1.8" fill="#fff" opacity="0.75"/>
+    <circle cx="-1" cy="10" r="2.8" fill="#f5c518"/>
+  </g>
+</svg>

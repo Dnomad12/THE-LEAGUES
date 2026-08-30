@@ -1,0 +1,33 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(60,60)">
+    <!-- Sun rays -->
+    <g fill="#c0532a">
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(0)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(30)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(60)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(90)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(120)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(150)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(180)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(210)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(240)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(270)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(300)"/>
+      <path d="M0 -54 L5.5 -37 L-5.5 -37 Z" transform="rotate(330)"/>
+    </g>
+    <!-- Central disc -->
+    <circle r="33" fill="#4a5e3a"/>
+    <circle r="33" fill="none" stroke="#2d3d22" stroke-width="1.5"/>
+    <!-- Boules -->
+    <circle cx="-10" cy="3" r="12" fill="#c8ccd3"/>
+    <circle cx="-10" cy="3" r="12" fill="none" stroke="#9a9ea6" stroke-width="0.8"/>
+    <path d="M-10 -7 A 12 12 0 0 1 -1 9" fill="none" stroke="#aeb2ba" stroke-width="0.6" opacity="0.6"/>
+    <circle cx="10" cy="-2" r="14" fill="#e2e5ea"/>
+    <circle cx="10" cy="-2" r="14" fill="none" stroke="#a8acb4" stroke-width="0.8"/>
+    <ellipse cx="5" cy="-8" rx="4.5" ry="3" fill="#fff" opacity="0.75"/>
+    <path d="M10 -14 A 14 14 0 0 1 21 6" fill="none" stroke="#c0c4cb" stroke-width="0.6" opacity="0.6"/>
+    <!-- Cochonnet -->
+    <circle cx="-1" cy="18" r="4.5" fill="#f5c518"/>
+    <circle cx="-1" cy="18" r="4.5" fill="none" stroke="#c99a00" stroke-width="0.6"/>
+  </g>
+</svg>
