@@ -1,0 +1,4 @@
+This folder is where you upload new darts screenshots.
+Drop image files here via GitHub's "Add file -> Upload files", then commit.
+The GitHub Action will pick them up automatically, extract the data,
+and move each processed image into darts/processed/.
