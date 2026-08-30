@@ -1,1 +1,40 @@
+name: Process Darts Screenshots
 
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'darts/incoming/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Extract match data from screenshots
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/process_darts_screenshot.py
+
+      - name: Commit and push results
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-extract darts match data"
+          file_pattern: 'darts/matches.json darts/incoming/* darts/processed/*'
