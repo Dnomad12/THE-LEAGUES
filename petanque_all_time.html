@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pétanque League</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #f5f0e8; --sand-dark: #e8dfc9; --sand-border: #d4c9b0;
+    --olive: #4a5e3a; --olive-light: #6b8a50; --olive-dark: #2d3d22;
+    --terracotta: #c0532a; --terra-light: #e07a52; --terra-dark: #8a3518;
+    --cream: #faf7f2; --white: #ffffff;
+    --text: #1e1a14; --text-mid: #4a4035; --text-muted: #7a6e5e;
+    --shadow: 0 2px 16px rgba(30,26,20,0.10);
+    --shadow-lg: 0 8px 40px rgba(30,26,20,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--olive-dark); position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand-icon { width: 36px; height: 36px; background: var(--terracotta); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .brand-text { line-height: 1.15; }
+  .brand-sub { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; color: var(--olive-light); text-transform: uppercase; }
+  .brand-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--cream); }
+  .nav { display: flex; gap: 2px; }
+  .nav-btn { background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: rgba(250,247,242,0.6); padding: 8px 12px; border-radius: 6px; text-transform: uppercase; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+  .nav-icon { width: 16px; height: 16px; filter: brightness(0) invert(1); opacity: 0.7; }
+  .nav-btn:hover .nav-icon, .nav-btn.active .nav-icon { opacity: 1; }
+  .nav-btn:hover { background: rgba(255,255,255,0.08); color: var(--cream); }
+  .nav-btn.active { background: var(--terracotta); color: white; }
+  .load-status { font-size: 11px; color: var(--olive-light); font-weight: 500; }
+
+  /* PAGES */
+  .page { display: none; max-width: 1200px; margin: 0 auto; padding: 36px 28px; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero { background: var(--olive-dark); border-radius: 20px; padding: 52px 48px; color: var(--cream); margin-bottom: 36px; position: relative; overflow: hidden; }
+  .hero-pattern { position: absolute; inset: 0; opacity: 0.04; background-image: radial-gradient(circle, var(--cream) 1.5px, transparent 1.5px); background-size: 28px 28px; }
+  .hero-decoration { position: absolute; right: 30px; bottom: 0; width: 360px; height: auto; opacity: 0.92; pointer-events: none; }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--terra-light); margin-bottom: 10px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; line-height: 1.05; margin-bottom: 10px; }
+  .hero p { font-size: 15px; color: rgba(250,247,242,0.72); margin-bottom: 28px; max-width: 520px; }
+  .hero-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-stat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 14px 22px; min-width: 120px; }
+  .hero-stat-num { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 700; color: var(--cream); }
+  .hero-stat-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(250,247,242,0.5); margin-top: 2px; }
+
+  /* SESSION TABS */
+  .tab-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .tab-btn { background: var(--white); border: 1.5px solid var(--sand-border); border-radius: 24px; padding: 7px 18px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.3px; transition: all .15s; }
+  .tab-btn:hover { border-color: var(--olive); color: var(--olive); }
+  .tab-btn.active { background: var(--olive); border-color: var(--olive); color: white; }
+
+  /* SECTION HEADER */
+  .section-head { margin-bottom: 24px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .section-sub { font-size: 13px; color: var(--text-muted); }
+
+  /* RANKINGS TABLE */
+  .table-card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--sand-border); }
+  .rankings-table { width: 100%; border-collapse: collapse; }
+  .rankings-table thead th { background: var(--olive-dark); color: var(--cream); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 18px; text-align: left; }
+  .rankings-table thead th.num { text-align: center; }
+  .rankings-table tbody td { padding: 13px 18px; border-bottom: 1px solid var(--sand-dark); font-size: 14px; vertical-align: middle; }
+  .rankings-table tbody td.num { text-align: center; font-weight: 600; }
+  .rankings-table tbody tr:last-child td { border-bottom: none; }
+  .rankings-table tbody tr:hover { background: var(--sand); }
+
+  .rank-num { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--sand-dark); color: var(--text-muted); }
+  .rank-num.r1 { background: #f5c518; color: #5a3e00; }
+  .rank-num.r2 { background: #b0b8c5; color: #2d3748; }
+  .rank-num.r3 { background: #cd7f32; color: white; }
+
+  .player-cell { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--olive-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; }
+  .player-name { font-weight: 600; font-size: 14px; }
+
+  .pts-badge { display: inline-block; background: var(--olive); color: white; padding: 3px 12px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+  .pts-badge.top { background: var(--terracotta); }
+  .diff-pos { color: #16a34a; font-weight: 700; }
+  .diff-neg { color: var(--terracotta); font-weight: 700; }
+  .diff-neu { color: var(--text-muted); font-weight: 600; }
+
+  /* MATCH CARDS */
+  .matches-list { display: flex; flex-direction: column; gap: 10px; }
+  .match-card { background: var(--white); border: 1px solid var(--sand-border); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 4px rgba(30,26,20,0.06); }
+  .match-teams { flex: 1; }
+  .match-team-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+  .match-team-row.winner .match-team-name { font-weight: 700; color: var(--olive-dark); }
+  .match-team-name { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+  .match-members { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .match-score-col { text-align: center; min-width: 70px; }
+  .score-display { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+  .score-a { color: var(--olive-dark); }
+  .score-b { color: var(--terracotta); }
+  .score-sep { color: var(--text-muted); margin: 0 3px; font-size: 18px; }
+  .match-tag { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); background: var(--sand); border-radius: 6px; padding: 2px 8px; }
+
+  /* TEAM CARDS */
+  .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .team-card { background: var(--white); border: 1px solid var(--sand-border); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 6px rgba(30,26,20,0.07); }
+  .team-card-header { background: var(--olive); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .team-code { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(250,247,242,0.7); }
+  .team-record { font-size: 12px; font-weight: 700; color: var(--cream); }
+  .team-card-body { padding: 12px 16px; }
+  .team-member-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--sand-dark); }
+  .team-member-row:last-child { border-bottom: none; }
+  .team-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--olive-light); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; flex-shrink: 0; }
+  .team-member-name { font-size: 13px; font-weight: 500; }
+
+  /* PLAYER PROFILE CARDS */
+  .player-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .player-card { background: var(--white); border: 1px solid var(--sand-border); border-radius: 14px; padding: 20px 18px; text-align: center; box-shadow: 0 1px 6px rgba(30,26,20,0.07); position: relative; overflow: hidden; }
+  .player-card-top { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--olive-light); }
+  .player-card-top.t1 { background: #f5c518; }
+  .player-card-top.t2 { background: #b0b8c5; }
+  .player-card-top.t3 { background: #cd7f32; }
+  .player-card-avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--olive-light); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: white; margin: 0 auto 10px; }
+  .player-card-rank { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .player-card-name { font-weight: 700; font-size: 15px; margin-bottom: 14px; }
+  .player-card-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 1px solid var(--sand-dark); }
+  .player-card-stat:last-child { border-bottom: none; }
+  .player-card-stat-key { color: var(--text-muted); }
+  .player-card-stat-val { font-weight: 700; color: var(--olive-dark); }
+
+  /* HOW TO PLAY */
+  .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .rule-card { background: var(--white); border: 1px solid var(--sand-border); border-radius: 14px; padding: 20px 22px; box-shadow: 0 1px 6px rgba(30,26,20,0.07); }
+  .rule-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--sand-border); line-height: 1; margin-bottom: 10px; }
+  .rule-title { font-weight: 700; font-size: 15px; color: var(--olive-dark); margin-bottom: 6px; }
+  .rule-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .rule-highlight { background: var(--sand); border-left: 3px solid var(--terracotta); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--terra-dark); }
+
+  /* EMPTY + LOADING */
+  .empty { text-align: center; padding: 48px; color: var(--text-muted); font-style: italic; font-size: 14px; }
+  .loading { text-align: center; padding: 64px; color: var(--text-muted); }
+  .spinner { font-size: 40px; animation: spin 1s linear infinite; display: inline-block; margin-bottom: 14px; }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .error-box { background: #fff5f5; border: 1px solid #fca5a5; border-radius: 10px; padding: 14px 18px; font-size: 13px; color: #b91c1c; margin-bottom: 20px; }
+
+  /* MOBILE */
+  .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--olive-dark); padding: 6px 0 8px; z-index: 100; justify-content: space-around; }
+  @media(max-width:768px) {
+    .mobile-nav { display: flex; }
+    .nav { display: none; }
+    .page { padding: 14px 14px 80px; }
+    .hero { padding: 28px 20px; }
+    .hero h1 { font-size: 34px; }
+    .hero-decoration { display: none; }
+    body { padding-bottom: 60px; }
+  }
+  .mnav-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; cursor: pointer; font-size: 9px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(250,247,242,0.5); padding: 4px 8px; text-decoration: none; }
+  .mnav-btn.active { color: var(--terra-light); }
+  .mnav-icon { font-size: 19px; }
+  .mnav-icon-img { width: 20px; height: 20px; filter: brightness(0) invert(1); opacity: 0.55; }
+  .mnav-btn.active .mnav-icon-img { opacity: 1; filter: brightness(0) saturate(100%) invert(45%) sepia(58%) saturate(700%) hue-rotate(330deg); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/logo.svg" alt="Pétanque League" style="width:42px;height:42px;flex-shrink:0;">
+      <div class="brand-text">
+        <div class="brand-sub">Pétanque</div>
+        <div class="brand-title">League</div>
+      </div>
+    </a>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('home')" id="nav-home"><img src="assets/icon-home.svg" class="nav-icon" alt="">Home</button>
+      <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings"><img src="assets/icon-rankings.svg" class="nav-icon" alt="">Rankings</button>
+      <button class="nav-btn" onclick="showPage('sessions')" id="nav-sessions"><img src="assets/icon-sessions.svg" class="nav-icon" alt="">Sessions</button>
+      <button class="nav-btn" onclick="showPage('matches')" id="nav-matches"><img src="assets/icon-matches.svg" class="nav-icon" alt="">Matches</button>
+      <button class="nav-btn" onclick="showPage('players')" id="nav-players"><img src="assets/icon-players.svg" class="nav-icon" alt="">Players</button>
+      <button class="nav-btn" onclick="showPage('howtoplay')" id="nav-howtoplay"><img src="assets/icon-howtoplay.svg" class="nav-icon" alt="">How to Play</button>
+    </nav>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <a class="nav-btn" href="index.html" style="text-decoration:none;">🏠 Main Page</a>
+      <span class="load-status" id="load-status"></span>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-nav">
+  <button class="mnav-btn active" onclick="showPage('home')" id="mnav-home"><img src="assets/icon-home.svg" class="mnav-icon-img" alt="">Home</button>
+  <button class="mnav-btn" onclick="showPage('rankings')" id="mnav-rankings"><img src="assets/icon-rankings.svg" class="mnav-icon-img" alt="">Ranks</button>
+  <button class="mnav-btn" onclick="showPage('sessions')" id="mnav-sessions"><img src="assets/icon-sessions.svg" class="mnav-icon-img" alt="">Sessions</button>
+  <button class="mnav-btn" onclick="showPage('matches')" id="mnav-matches"><img src="assets/icon-matches.svg" class="mnav-icon-img" alt="">Matches</button>
+  <button class="mnav-btn" onclick="showPage('players')" id="mnav-players"><img src="assets/icon-players.svg" class="mnav-icon-img" alt="">Players</button>
+  <a class="mnav-btn" href="index.html"><span class="mnav-icon">🏠</span>Main</a>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-pattern"></div>
+    <img src="assets/hero-boules.svg" class="hero-decoration" alt="">
+    <div class="hero-eyebrow">Official Standings</div>
+    <h1>Pétanque<br>League</h1>
+    <p>Tracks all results, sessions and player standings. Every match counts — substitutes score for themselves.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-players">—</div><div class="hero-stat-label">Players</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-matches">—</div><div class="hero-stat-label">Matches</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="stat-sessions">—</div><div class="hero-stat-label">Sessions</div></div>
+    </div>
+  </div>
+
+  <!-- Top 5 + latest results side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+    <div>
+      <div class="section-head"><div class="section-title">Top 10</div></div>
+      <div class="table-card"><div id="home-top5"></div></div>
+    </div>
+    <div>
+      <div class="section-head"><div class="section-title">Latest Results</div><div class="section-sub" id="home-latest-session"></div></div>
+      <div class="matches-list" id="home-latest-matches"></div>
+    </div>
+  </div>
+
+  <!-- Decorative scene banner -->
+  <img src="assets/scene-banner.svg" alt="Provençal pétanque scene" style="width:100%;height:auto;border-radius:16px;box-shadow:var(--shadow);display:block;">
+</div>
+
+<!-- OVERALL RANKINGS -->
+<div class="page" id="page-rankings">
+  <div class="section-head">
+    <div class="section-title">Overall Rankings</div>
+    <div class="section-sub">All sessions combined — Win=2pts, Draw=1pt, Loss=0</div>
+  </div>
+  <div class="table-card" id="rankings-table"><div class="loading"><div class="spinner">🎯</div><br>Loading...</div></div>
+</div>
+
+<!-- BY SESSION -->
+<div class="page" id="page-sessions">
+  <div class="section-head"><div class="section-title">Session Rankings</div><div class="section-sub">Standings per monthly session</div></div>
+  <div class="tab-row" id="session-tabs"></div>
+  <div class="table-card" id="session-table"></div>
+</div>
+
+<!-- MATCHES -->
+<div class="page" id="page-matches">
+  <div class="section-head"><div class="section-title">Match Results</div><div class="section-sub">All matches played</div></div>
+  <div class="tab-row" id="match-tabs"></div>
+  <div class="matches-list" id="matches-list"></div>
+</div>
+
+<!-- PLAYERS -->
+<div class="page" id="page-players">
+  <div class="section-head"><div class="section-title">Player Stats</div><div class="section-sub">Individual records across all sessions</div></div>
+  <div class="player-cards" id="player-cards"></div>
+</div>
+
+<!-- HOW TO PLAY -->
+<div class="page" id="page-howtoplay">
+  <div class="section-head"><div class="section-title">How to Play Pétanque</div><div class="section-sub">The essentials for new players</div></div>
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-num">01</div>
+      <div class="rule-title">The Objective</div>
+      <div class="rule-text">Get your boules (metal balls) as close as possible to the cochonnet — a small wooden target ball also called the "jack" or "piglet".</div>
+      <div class="rule-highlight">Closest boule to the cochonnet wins the round</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">02</div>
+      <div class="rule-title">Teams & Boules</div>
+      <div class="rule-text">Play 1v1 (singles): 3 boules each. Play 2v2 (doubles): 3 boules each. Play 3v3 (triples): 2 boules each.</div>
+      <div class="rule-highlight">In this league we play in teams of 2 or 3</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">03</div>
+      <div class="rule-title">Throwing</div>
+      <div class="rule-text">Stand inside a circle drawn on the ground. Throw underarm with feet together. You can either "point" (roll your boule close to the jack) or "shoot" (knock away an opponent's boule).</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">04</div>
+      <div class="rule-title">Scoring</div>
+      <div class="rule-text">Only one team scores per round — the team with the closest boule. They score one point for each of their boules that is closer to the jack than the opponent's nearest boule.</div>
+      <div class="rule-highlight">First to 13 points wins the game</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">05</div>
+      <div class="rule-title">Order of Play</div>
+      <div class="rule-text">The team that threw the cochonnet throws first. After each throw, the team that does NOT have the nearest boule throws next. This continues until one team has no boules left.</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">06</div>
+      <div class="rule-title">The Cochonnet</div>
+      <div class="rule-text">Must be thrown 6–10m from the throwing circle, at least 1m from any boundary. If the jack is knocked out of bounds, the round is void and the team that did NOT throw the jack scores nothing — they replay.</div>
+      <div class="rule-highlight">Keep the jack in bounds!</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const URLS = {
+  fixtures: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrlm9n0oNlUxj19V9cD6W2YiV6o-NmVrmgt7MmfnR327dwrisPBEp0r1Ptn5Ua_CbqpgSYVsaEcf40/pub?gid=1612705044&single=true&output=csv',
+  teams:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrlm9n0oNlUxj19V9cD6W2YiV6o-NmVrmgt7MmfnR327dwrisPBEp0r1Ptn5Ua_CbqpgSYVsaEcf40/pub?gid=1508443917&single=true&output=csv',
+};
+const PROXY = 'https://corsproxy.io/?';
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = splitLine(lines[0]).map(h => h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(line => {
+    const cols = splitLine(line).map(c => c.replace(/^"|"$/g,'').trim());
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = cols[i] !== undefined ? cols[i] : ''; });
+    return obj;
+  });
+}
+function splitLine(line) {
+  const cols = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { cols.push(cur); cur = ''; }
+    else { cur += line[i]; }
+  }
+  cols.push(cur); return cols;
+}
+async function fetchCSV(url) {
+  const proxies = [url, PROXY + encodeURIComponent(url), 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)];
+  for (const u of proxies) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch(u, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text && text.length > 10) return parseCSV(text);
+    } catch(e) {}
+  }
+  return null;
+}
+
+const initials = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().substring(0,2);
+const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+const rankNum = r => '<span class="rank-num ' + (r===1?'r1':r===2?'r2':r===3?'r3':'') + '">' + r + '</span>';
+
+let APP = { fixtures: [], teamMap: {}, sessions: [] };
+let curSession = '', curMatchSession = '';
+
+function buildTeamLookup(teamsRows) {
+  const lookup = {};
+  teamsRows.forEach(r => {
+    const session = (r['SESSION'] || '').trim();
+    const team = (r['TEAM'] || '').trim();
+    if (!session || !team) return;
+    const members = [r['Member_1'], r['Member_2'], r['Member_3']].map(m=>(m||'').trim()).filter(Boolean);
+    lookup[session + '|' + team] = members;
+  });
+  return lookup;
+}
+
+function getMembers(session, teamCode) {
+  return APP.teamMap[session + '|' + teamCode] || [teamCode];
+}
+
+function computeRankings(fixtures) {
+  const pm = {};
+  const ensureP = name => {
+    const k = name.toLowerCase().trim();
+    if (!pm[k]) pm[k] = { player:name, wins:0, losses:0, ties:0, matches_played:0, pts_scored:0, pts_against:0, pts:0 };
+    return pm[k];
+  };
+  fixtures.forEach(f => {
+    const session = (f['Month']||'').trim();
+    const tA = (f['Player/Team  A']||'').trim();
+    const tB = (f['Player/Team  B']||'').trim();
+    const sA = parseInt(f['Score A']), sB = parseInt(f['Score B']);
+    if (!tA || !tB || isNaN(sA) || isNaN(sB)) return;
+    const mA = getMembers(session, tA), mB = getMembers(session, tB);
+    [...mA.map(n=>({n,s:'A'})), ...mB.map(n=>({n,s:'B'}))].forEach(({n,s}) => {
+      const p = ensureP(n);
+      const my = s==='A'?sA:sB, opp = s==='A'?sB:sA;
+      p.matches_played++; p.pts_scored+=my; p.pts_against+=opp;
+      if (my>opp){p.wins++;p.pts+=2;} else if(my<opp){p.losses++;} else{p.ties++;p.pts+=1;}
+    });
+  });
+  return Object.values(pm).map(p=>({...p, diff:p.pts_scored-p.pts_against, win_pct:p.matches_played>0?Math.round(p.wins/p.matches_played*100):0}))
+    .sort((a,b)=>(b.pts-a.pts)||(b.diff-a.diff)).map((p,i)=>({ranking:i+1,...p}));
+}
+
+function renderTable(players, compact=false) {
+  if (!players||!players.length) return '<div class="empty">No data yet</div>';
+  const rows = players.map(p => {
+    const diff = p.diff > 0 ? '<span class="diff-pos">+'+p.diff+'</span>' : p.diff < 0 ? '<span class="diff-neg">'+p.diff+'</span>' : '<span class="diff-neu">0</span>';
+    const chip = '<span class="pts-badge' + (p.ranking===1?' top':'') + '">' + p.pts + '</span>';
+    return '<tr>'
+      + '<td class="num">' + rankNum(p.ranking) + '</td>'
+      + '<td><div class="player-cell"><div class="avatar">' + initials(p.player) + '</div><span class="player-name">' + p.player + '</span></div></td>'
+      + '<td class="num">' + chip + '</td>'
+      + '<td class="num">' + p.wins + '</td>'
+      + '<td class="num">' + p.ties + '</td>'
+      + '<td class="num">' + p.losses + '</td>'
+      + (compact ? '' : '<td class="num">' + p.win_pct + '%</td><td class="num">' + diff + '</td>')
+      + '</tr>';
+  }).join('');
+  const extraCols = compact ? '' : '<th class="num">Win%</th><th class="num">Diff</th>';
+  return '<table class="rankings-table"><thead><tr>'
+    + '<th class="num">#</th><th>Player</th><th class="num">Pts</th>'
+    + '<th class="num">W</th><th class="num">D</th><th class="num">L</th>'
+    + extraCols + '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function renderMatchCard(f) {
+  const session = (f['Month']||'').trim();
+  const tA = (f['Player/Team  A']||'').trim();
+  const tB = (f['Player/Team  B']||'').trim();
+  const sA = parseInt(f['Score A']), sB = parseInt(f['Score B']);
+  const mA = getMembers(session, tA).join(', ');
+  const mB = getMembers(session, tB).join(', ');
+  const aW = sA > sB, bW = sB > sA;
+  return '<div class="match-card">'
+    + '<div class="match-teams">'
+    + '<div class="match-team-row' + (aW?' winner':'') + '"><span class="match-team-name">' + mA + '</span></div>'
+    + '<div class="match-team-row' + (bW?' winner':'') + '"><span class="match-team-name">' + mB + '</span></div>'
+    + '</div>'
+    + '<div class="match-score-col">'
+    + '<div class="score-display"><span class="score-a' + (aW?'" style="font-size:26px':'"') + '">' + sA + '</span>'
+    + '<span class="score-sep">–</span>'
+    + '<span class="score-b' + (bW?'" style="font-size:26px':'"') + '">' + sB + '</span></div>'
+    + '</div>'
+    + '</div>';
+}
+
+function renderHome() {
+  const players = computeRankings(APP.fixtures);
+  setText('stat-players', players.length);
+  setText('stat-matches', APP.fixtures.filter(f=>f['Score A']!=='').length);
+  setText('stat-sessions', APP.sessions.length);
+  // Top 10
+  document.getElementById('home-top5').innerHTML = renderTable(players.slice(0,10), true);
+
+  // Latest session matches
+  const latest = APP.sessions[APP.sessions.length-1] || '';
+  setText('home-latest-session', latest);
+  const latestFixtures = APP.fixtures.filter(f=>(f['Month']||'').trim()===latest && f['Score A']!=='');
+  document.getElementById('home-latest-matches').innerHTML = latestFixtures.length
+    ? latestFixtures.map(renderMatchCard).join('')
+    : '<div class="empty">No matches yet</div>';
+}
+
+function renderRankings() {
+  document.getElementById('rankings-table').innerHTML = renderTable(computeRankings(APP.fixtures));
+}
+
+function renderSessions() {
+  document.getElementById('session-tabs').innerHTML = APP.sessions.map(s =>
+    '<button class="tab-btn' + (s===curSession?' active':'') + '" onclick="selSession(\'' + s + '\')">' + s + '</button>'
+  ).join('');
+  renderSessionTable();
+}
+function selSession(s) {
+  curSession = s;
+  document.querySelectorAll('#session-tabs .tab-btn').forEach(b => b.classList.toggle('active', b.textContent===s));
+  renderSessionTable();
+}
+function renderSessionTable() {
+  const fx = APP.fixtures.filter(f=>(f['Month']||'').trim()===curSession);
+  document.getElementById('session-table').innerHTML = renderTable(computeRankings(fx));
+}
+
+function renderMatches() {
+  document.getElementById('match-tabs').innerHTML = APP.sessions.map(s =>
+    '<button class="tab-btn' + (s===curMatchSession?' active':'') + '" onclick="selMatchSession(\'' + s + '\')">' + s + '</button>'
+  ).join('');
+  renderMatchList();
+}
+function selMatchSession(s) {
+  curMatchSession = s;
+  document.querySelectorAll('#match-tabs .tab-btn').forEach(b => b.classList.toggle('active', b.textContent===s));
+  renderMatchList();
+}
+function renderMatchList() {
+  const fx = APP.fixtures.filter(f=>(f['Month']||'').trim()===curMatchSession && f['Score A']!=='');
+  document.getElementById('matches-list').innerHTML = fx.length
+    ? fx.map(renderMatchCard).join('')
+    : '<div class="empty">No matches for this session</div>';
+}
+
+function renderPlayers() {
+  const players = computeRankings(APP.fixtures);
+  document.getElementById('player-cards').innerHTML = players.map(p => {
+    const tc = p.ranking===1?'t1':p.ranking===2?'t2':p.ranking===3?'t3':'';
+    const diff = p.diff >= 0 ? '+'+p.diff : ''+p.diff;
+    const diffColor = p.diff > 0 ? 'var(--olive-dark)' : p.diff < 0 ? 'var(--terracotta)' : 'var(--text-muted)';
+    return '<div class="player-card">'
+      + '<div class="player-card-top ' + tc + '"></div>'
+      + '<div class="player-card-rank">#' + p.ranking + (p.ranking===1?' 🏆':'') + '</div>'
+      + '<div class="player-card-avatar">' + initials(p.player) + '</div>'
+      + '<div class="player-card-name">' + p.player + '</div>'
+      + '<div class="player-card-stat"><span class="player-card-stat-key">Points</span><span class="player-card-stat-val">' + p.pts + '</span></div>'
+      + '<div class="player-card-stat"><span class="player-card-stat-key">W / D / L</span><span class="player-card-stat-val">' + p.wins + '/' + p.ties + '/' + p.losses + '</span></div>'
+      + '<div class="player-card-stat"><span class="player-card-stat-key">Win %</span><span class="player-card-stat-val">' + p.win_pct + '%</span></div>'
+      + '<div class="player-card-stat"><span class="player-card-stat-key">Matches</span><span class="player-card-stat-val">' + p.matches_played + '</span></div>'
+      + '<div class="player-card-stat"><span class="player-card-stat-key">Diff</span><span class="player-card-stat-val" style="color:' + diffColor + '">' + diff + '</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn, .mnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  ['nav-'+p,'mnav-'+p].forEach(id => { const el=document.getElementById(id); if(el) el.classList.add('active'); });
+  window.scrollTo(0,0);
+}
+
+async function init() {
+  const setStatus = msg => setText('load-status', msg);
+  setStatus('Loading fixtures...');
+  const fixtureRows = await fetchCSV(URLS.fixtures);
+  setStatus('Loading teams...');
+  const teamsRows = await fetchCSV(URLS.teams);
+  setStatus('');
+
+  if (!fixtureRows || !teamsRows) {
+    document.getElementById('rankings-table').innerHTML = '<div class="error-box">⚠️ Could not load data. Check your connection and refresh.</div>';
+    return;
+  }
+
+  APP.fixtures = fixtureRows;
+  APP.teamMap = buildTeamLookup(teamsRows);
+  APP.sessions = [...new Set(fixtureRows.map(f=>(f['Month']||'').trim()).filter(Boolean))];
+  curSession = APP.sessions[APP.sessions.length-1] || '';
+  curMatchSession = curSession;
+
+  renderHome();
+  renderRankings();
+  renderSessions();
+  renderMatches();
+  renderPlayers();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// Auto-refresh every 5 minutes to pick up new scores from Google Sheets
+setInterval(() => location.reload(), 5 * 60 * 1000);
+</script>
+</body>
+</html>
