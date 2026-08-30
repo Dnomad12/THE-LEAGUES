@@ -37,4 +37,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto-extract darts match data"
-          file_pattern: 'darts/matches.json darts/incoming/* darts/processed/*'
+          file_pattern: 'darts/matches.json darts/throws.json darts/incoming/* darts/processed/*'
