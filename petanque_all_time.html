@@ -301,7 +301,6 @@
 <script>
 const URLS = {
   fixtures: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrlm9n0oNlUxj19V9cD6W2YiV6o-NmVrmgt7MmfnR327dwrisPBEp0r1Ptn5Ua_CbqpgSYVsaEcf40/pub?gid=1612705044&single=true&output=csv',
-  teams:    'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrlm9n0oNlUxj19V9cD6W2YiV6o-NmVrmgt7MmfnR327dwrisPBEp0r1Ptn5Ua_CbqpgSYVsaEcf40/pub?gid=1508443917&single=true&output=csv',
 };
 const PROXY = 'https://corsproxy.io/?';
 
@@ -345,23 +344,12 @@ const initials = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().substring
 const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 const rankNum = r => '<span class="rank-num ' + (r===1?'r1':r===2?'r2':r===3?'r3':'') + '">' + r + '</span>';
 
-let APP = { fixtures: [], teamMap: {}, sessions: [] };
+let APP = { fixtures: [], sessions: [] };
 let curSession = '', curMatchSession = '';
 
-function buildTeamLookup(teamsRows) {
-  const lookup = {};
-  teamsRows.forEach(r => {
-    const session = (r['SESSION'] || '').trim();
-    const team = (r['TEAM'] || '').trim();
-    if (!session || !team) return;
-    const members = [r['Member_1'], r['Member_2'], r['Member_3']].map(m=>(m||'').trim()).filter(Boolean);
-    lookup[session + '|' + team] = members;
-  });
-  return lookup;
-}
-
-function getMembers(session, teamCode) {
-  return APP.teamMap[session + '|' + teamCode] || [teamCode];
+function getTeamMembers(row, prefix) {
+  return [row[prefix + '1'], row[prefix + '2'], row[prefix + '3']]
+    .map(m => (m || '').trim()).filter(Boolean);
 }
 
 function computeRankings(fixtures) {
@@ -372,12 +360,9 @@ function computeRankings(fixtures) {
     return pm[k];
   };
   fixtures.forEach(f => {
-    const session = (f['Month']||'').trim();
-    const tA = (f['Player/Team  A']||'').trim();
-    const tB = (f['Player/Team  B']||'').trim();
     const sA = parseInt(f['Score A']), sB = parseInt(f['Score B']);
-    if (!tA || !tB || isNaN(sA) || isNaN(sB)) return;
-    const mA = getMembers(session, tA), mB = getMembers(session, tB);
+    const mA = getTeamMembers(f, 'TAP'), mB = getTeamMembers(f, 'TBP');
+    if (!mA.length || !mB.length || isNaN(sA) || isNaN(sB)) return;
     [...mA.map(n=>({n,s:'A'})), ...mB.map(n=>({n,s:'B'}))].forEach(({n,s}) => {
       const p = ensureP(n);
       const my = s==='A'?sA:sB, opp = s==='A'?sB:sA;
@@ -412,12 +397,9 @@ function renderTable(players, compact=false) {
 }
 
 function renderMatchCard(f) {
-  const session = (f['Month']||'').trim();
-  const tA = (f['Player/Team  A']||'').trim();
-  const tB = (f['Player/Team  B']||'').trim();
+  const mA = getTeamMembers(f, 'TAP').join(', ');
+  const mB = getTeamMembers(f, 'TBP').join(', ');
   const sA = parseInt(f['Score A']), sB = parseInt(f['Score B']);
-  const mA = getMembers(session, tA).join(', ');
-  const mB = getMembers(session, tB).join(', ');
   const aW = sA > sB, bW = sB > sA;
   return '<div class="match-card">'
     + '<div class="match-teams">'
@@ -519,17 +501,14 @@ async function init() {
   const setStatus = msg => setText('load-status', msg);
   setStatus('Loading fixtures...');
   const fixtureRows = await fetchCSV(URLS.fixtures);
-  setStatus('Loading teams...');
-  const teamsRows = await fetchCSV(URLS.teams);
   setStatus('');
 
-  if (!fixtureRows || !teamsRows) {
+  if (!fixtureRows) {
     document.getElementById('rankings-table').innerHTML = '<div class="error-box">⚠️ Could not load data. Check your connection and refresh.</div>';
     return;
   }
 
   APP.fixtures = fixtureRows;
-  APP.teamMap = buildTeamLookup(teamsRows);
   APP.sessions = [...new Set(fixtureRows.map(f=>(f['Month']||'').trim()).filter(Boolean))];
   curSession = APP.sessions[APP.sessions.length-1] || '';
   curMatchSession = curSession;
