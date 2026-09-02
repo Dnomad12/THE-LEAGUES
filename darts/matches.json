@@ -274,5 +274,309 @@
     "source_image": "IMG_6075.jpeg",
     "source_hash": "71eeee8f91f74194fbf95c5f6d7b684d0f375ba28ce2ef46c99978c4d1edd495",
     "processed_at": "2026-09-02T12:21:55.826300+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "STRAIGHT IN, STRAIGHT OUT",
+    "raw_date": "30.07.26",
+    "date": "2026-07-30",
+    "time": "23:37",
+    "duration_minutes": 19,
+    "duration_seconds": 48,
+    "players": [
+      "JAUBERT",
+      "DNOMAD12",
+      "JULABUU"
+    ],
+    "winner": "JULABUU",
+    "leg_stats": {
+      "JAUBERT": {
+        "ppr": 28.76,
+        "first9_ppr": 35.0,
+        "darts_thrown": 51,
+        "checkout_pct": 0,
+        "checkout_attempts": 14,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 29.0,
+        "first9_ppr": 26.33,
+        "darts_thrown": 51,
+        "checkout_pct": 0,
+        "checkout_attempts": 6,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "JULABUU": {
+        "ppr": 30.06,
+        "first9_ppr": 23.0,
+        "darts_thrown": 50,
+        "checkout_pct": 14.29,
+        "checkout_attempts": 7,
+        "checkout_makes": 1,
+        "checkout_points": 11,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-07-30_23-37_img_5945",
+    "source_image": "IMG_5945.JPG",
+    "source_hash": "bc96e47171aac551860bc1ab4f382379f20831ce3b4e205c07a5a8160cf1165f",
+    "processed_at": "2026-09-02T13:35:12.093497+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "30.07.26",
+    "date": "2026-07-30",
+    "time": "23:16",
+    "duration_minutes": 16,
+    "duration_seconds": 40,
+    "players": [
+      "JULABUU",
+      "JAUBERT",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "JULABUU": {
+        "ppr": 32.67,
+        "first9_ppr": 39.0,
+        "darts_thrown": 45,
+        "checkout_pct": 0,
+        "checkout_attempts": 2,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "JAUBERT": {
+        "ppr": 33.2,
+        "first9_ppr": 33.67,
+        "darts_thrown": 45,
+        "checkout_pct": 0,
+        "checkout_attempts": 2,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 0,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 34.95,
+        "first9_ppr": 45.0,
+        "darts_thrown": 43,
+        "checkout_pct": 25.0,
+        "checkout_attempts": 4,
+        "checkout_makes": 1,
+        "checkout_points": 18,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-07-30_23-16_img_5946",
+    "source_image": "IMG_5946.JPG",
+    "source_hash": "8a2d72992d9c032f6f4fbd11135f0045f2416553a8e26d90660bfe4ccd5eaa7a",
+    "processed_at": "2026-09-02T13:37:36.530811+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In, Straight Out",
+    "raw_date": "26.06.26",
+    "date": "2026-06-26",
+    "time": "21:24",
+    "duration_minutes": 13,
+    "duration_seconds": 53,
+    "players": [
+      "DNOMAD12",
+      "JULABUU"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 46.97,
+        "first9_ppr": 41.0,
+        "darts_thrown": 32,
+        "checkout_pct": 33.33,
+        "checkout_attempts": 3,
+        "checkout_makes": 1,
+        "checkout_points": 21,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "JULABUU": {
+        "ppr": 33.4,
+        "first9_ppr": 32.33,
+        "darts_thrown": 30,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 0,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-06-26_21-24_img_5947",
+    "source_image": "IMG_5947.JPG",
+    "source_hash": "4f36fbad9a47edebf3da7810eda4f7f38615b4c2eb26c36104b0c6888b67bef3",
+    "processed_at": "2026-09-02T13:38:26.584338+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In, Straight Out",
+    "raw_date": "26.06.26",
+    "date": "2026-06-26",
+    "time": "21:38",
+    "duration_minutes": 13,
+    "duration_seconds": 19,
+    "players": [
+      "JULABUU",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "JULABUU": {
+        "ppr": 35.57,
+        "first9_ppr": 35.33,
+        "darts_thrown": 42,
+        "checkout_pct": 0,
+        "checkout_attempts": 5,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 37.58,
+        "first9_ppr": 35.0,
+        "darts_thrown": 40,
+        "checkout_pct": 16.67,
+        "checkout_attempts": 6,
+        "checkout_makes": 1,
+        "checkout_points": 7,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-06-26_21-38_img_5948",
+    "source_image": "IMG_5948.JPG",
+    "source_hash": "cd3ef08330508cbe0f9dc40fbfabf7ece986125e2d47be9eb3d586e90fb6728f",
+    "processed_at": "2026-09-02T13:40:32.131031+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "26.06.26",
+    "date": "2026-06-26",
+    "time": "21:54",
+    "duration_minutes": 16,
+    "duration_seconds": 3,
+    "players": [
+      "JULABUU",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "JULABUU": {
+        "ppr": 28.47,
+        "first9_ppr": 25.0,
+        "darts_thrown": 51,
+        "checkout_pct": 0.0,
+        "checkout_attempts": 12,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 30.67,
+        "first9_ppr": 17.67,
+        "darts_thrown": 49,
+        "checkout_pct": 20.0,
+        "checkout_attempts": 5,
+        "checkout_makes": 1,
+        "checkout_points": 18,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-06-26_21-54_img_5949",
+    "source_image": "IMG_5949.JPG",
+    "source_hash": "0c4a07a3714b82960c4681e5b92396e60da24d21229bbc8aea784881b2a4b894",
+    "processed_at": "2026-09-02T13:42:07.744776+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "26.06.26",
+    "date": "2026-06-26",
+    "time": "22:06",
+    "duration_minutes": 12,
+    "duration_seconds": 9,
+    "players": [
+      "DNOMAD12",
+      "JULABUU"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 34.95,
+        "first9_ppr": 39.67,
+        "darts_thrown": 43,
+        "checkout_pct": 20.0,
+        "checkout_attempts": 5,
+        "checkout_makes": 1,
+        "checkout_points": 5,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "JULABUU": {
+        "ppr": 35.43,
+        "first9_ppr": 44.33,
+        "darts_thrown": 42,
+        "checkout_pct": 0,
+        "checkout_attempts": 8,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-06-26_22-06_img_5950",
+    "source_image": "IMG_5950.JPG",
+    "source_hash": "ef0c52c9893c8bf25ffa1e95318dcdcd4eb5718de2bc94192ea58a1090b129c1",
+    "processed_at": "2026-09-02T13:43:13.886209+00:00"
   }
 ]
