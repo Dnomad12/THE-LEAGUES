@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In, Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "21:18",
+    "duration_minutes": 12,
+    "duration_seconds": 1,
+    "players": [
+      "MARCEYY",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "MARCEYY": {
+        "ppr": 36.67,
+        "first9_ppr": 30.33,
+        "darts_thrown": 36,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 42.94,
+        "first9_ppr": 32.33,
+        "darts_thrown": 35,
+        "checkout_pct": 25.0,
+        "checkout_attempts": 4,
+        "checkout_makes": 1,
+        "checkout_points": 25,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_21-18_img_6076",
+    "source_image": "IMG_6076.jpeg",
+    "source_hash": "0d6a599c51e02ba58f9c9cc4610d4b99ce4248451aff14bdb1178117316f66e8",
+    "processed_at": "2026-09-02T06:48:32.413434+00:00"
+  }
+]
