@@ -107,6 +107,16 @@
   .stat-box .num { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; color: var(--dartred); }
   .stat-box .label { font-size: 12px; color: var(--board-soft); margin-top: 4px; }
 
+  .achieve-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .achieve-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .achieve-card .icon { font-size: 26px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .achieve-card .value { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 20px; color: var(--dartred); }
+  .achieve-card .label { font-size: 11.5px; color: var(--board-soft); margin-top: 2px; }
+  .achieve-card .who { font-weight: 700; margin-top: 5px; font-size: 14px; }
+
   .fun-fact {
     background: var(--dartgreen-soft);
     border: 1px solid var(--dartgreen);
@@ -257,6 +267,12 @@
   </div>
 
   <div class="stat-row" id="home-stat-row"></div>
+
+  <div class="section-head">
+    <h2>Hall of fame</h2>
+    <p>The best individual moments recorded so far -- new records get crowned here as matches come in.</p>
+  </div>
+  <div class="stat-row achieve-grid" id="home-achievements"></div>
 
   <div class="fun-fact" id="home-fun-fact" style="display:none;">
     <div class="icon">🎯</div>
@@ -411,12 +427,18 @@ function aggregate(matches, throws) {
     st.triples = real.filter(t => t.multiplier === 3).length;
     st.doubles = real.filter(t => t.multiplier === 2).length;
     st.singles = real.filter(t => t.multiplier === 1).length;
+    st.bulls = real.filter(t => t.base === 25).length;
     st.biggest_dart = real.reduce((mx, t) => Math.max(mx, t.value), 0);
     st.avg_dart = real.length ? real.reduce((s, t) => s + t.value, 0) / real.length : 0;
     st.avg_ppr = st.ppr_count ? st.ppr_sum / st.ppr_count : null;
     st.avg_first9 = st.first9_count ? st.first9_sum / st.first9_count : null;
     st.checkout_pct = st.checkout_attempts ? (st.checkout_makes / st.checkout_attempts * 100) : null;
     st.busts = st.busts || 0;
+
+    st.number_counts = {};
+    for (let n = 1; n <= 20; n++) st.number_counts[n] = 0;
+    st.number_counts[25] = 0;
+    real.forEach(t => { if (st.number_counts[t.base] !== undefined) st.number_counts[t.base]++; });
 
     const counts = {};
     real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
@@ -467,14 +489,16 @@ function buildMatchRounds(matchThrows) {
 function renderHome() {
   const { matches, players } = STATE;
   const totalDarts = Object.values(players).reduce((s, p) => s + p.real_throws, 0);
-  const total180s = Object.values(players).reduce((s, p) => s + p.s180, 0);
+  const totalTriples = Object.values(players).reduce((s, p) => s + p.triples, 0);
 
   document.getElementById('home-stat-row').innerHTML = `
     <div class="stat-box"><div class="num">${matches.length}</div><div class="label">Matches logged</div></div>
     <div class="stat-box"><div class="num">${totalDarts}</div><div class="label">Darts thrown</div></div>
-    <div class="stat-box"><div class="num">${total180s}</div><div class="label">180s hit</div></div>
+    <div class="stat-box"><div class="num">${totalTriples}</div><div class="label">Triples hit</div></div>
     <div class="stat-box"><div class="num">${Object.keys(players).length}</div><div class="label">Players</div></div>
   `;
+
+  document.getElementById('home-achievements').innerHTML = achievementCardsHTML(computeAchievements(matches, players));
 
   const real = STATE.throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
   if (real.length) {
@@ -495,6 +519,59 @@ function renderHome() {
     return;
   }
   container.innerHTML = matchCardHTML(latest, false, 'home');
+}
+
+function computeAchievements(matches, players) {
+  const achievements = [];
+
+  let highestCheckout = null;
+  matches.forEach(m => {
+    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+      if (ls.checkout_points != null && (!highestCheckout || ls.checkout_points > highestCheckout.value)) {
+        highestCheckout = { who: p, value: ls.checkout_points, detail: fmtDate(m.date) };
+      }
+    });
+  });
+  if (highestCheckout) achievements.push({ icon: '🏁', label: 'Highest checkout', value: highestCheckout.value, who: highestCheckout.who, detail: highestCheckout.detail });
+
+  let bestLeg = null;
+  matches.forEach(m => {
+    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+      if (ls.ppr != null && (!bestLeg || ls.ppr > bestLeg.value)) {
+        bestLeg = { who: p, value: ls.ppr, detail: fmtDate(m.date) };
+      }
+    });
+  });
+  if (bestLeg) achievements.push({ icon: '🔥', label: 'Best single-leg PPR', value: bestLeg.value.toFixed(1), who: bestLeg.who, detail: bestLeg.detail });
+
+  const bySeasonAvg = Object.values(players).filter(p => p.avg_ppr != null).sort((a, b) => b.avg_ppr - a.avg_ppr)[0];
+  if (bySeasonAvg) achievements.push({ icon: '🥇', label: 'Best season average', value: bySeasonAvg.avg_ppr.toFixed(1), who: bySeasonAvg.name, detail: bySeasonAvg.matches + ' leg' + (bySeasonAvg.matches === 1 ? '' : 's') + ' played' });
+
+  const byTriples = Object.values(players).filter(p => p.triples > 0).sort((a, b) => b.triples - a.triples)[0];
+  if (byTriples) achievements.push({ icon: '🔺', label: 'Most triples hit', value: byTriples.triples, who: byTriples.name, detail: 'career total' });
+
+  const byDoubles = Object.values(players).filter(p => p.doubles > 0).sort((a, b) => b.doubles - a.doubles)[0];
+  if (byDoubles) achievements.push({ icon: '🟢', label: 'Most doubles hit', value: byDoubles.doubles, who: byDoubles.name, detail: 'career total' });
+
+  const byBulls = Object.values(players).filter(p => p.bulls > 0).sort((a, b) => b.bulls - a.bulls)[0];
+  if (byBulls) achievements.push({ icon: '🔴', label: 'Most bulls hit', value: byBulls.bulls, who: byBulls.name, detail: 'career total' });
+
+  return achievements;
+}
+
+function achievementCardsHTML(achievements) {
+  if (!achievements.length) return '<div class="card empty-note">Not enough matches yet to crown any achievements.</div>';
+  return achievements.map(a => `
+    <div class="achieve-card">
+      <div class="icon">${a.icon}</div>
+      <div>
+        <div class="value">${a.value}</div>
+        <div class="label">${a.label}</div>
+        <div class="who">${a.who}</div>
+        <div class="label">${a.detail}</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function matchCardHTML(m, expanded, uidPrefix) {
@@ -583,6 +660,9 @@ function renderRankings() {
     { key: 'avg_ppr', label: 'Avg PPR', num: true },
     { key: 'avg_first9', label: 'First 9', num: true },
     { key: 'checkout_pct', label: 'Checkout', num: true },
+    { key: 'triples', label: 'Triples', num: true },
+    { key: 'doubles', label: 'Doubles', num: true },
+    { key: 'bulls', label: 'Bulls', num: true },
     { key: 's180', label: '180s', num: true },
     { key: 'busts', label: 'Busts', num: true },
   ];
@@ -604,12 +684,15 @@ function renderRankings() {
         <td class="num">${fmt1(r.avg_ppr)}</td>
         <td class="num">${fmt1(r.avg_first9)}</td>
         <td class="num">${fmtPct(r.checkout_pct)}</td>
+        <td class="num">${r.triples}</td>
+        <td class="num">${r.doubles}</td>
+        <td class="num">${r.bulls}</td>
         <td class="num">${r.s180}</td>
         <td class="num">${r.busts}</td>
       </tr>
     `).join('');
     document.getElementById('rankings-wrap').innerHTML = rows.length
-      ? `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`
+      ? `<div style="overflow-x:auto;"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
       : '<div class="empty-note">No matches recorded yet.</div>';
   }
 
@@ -701,21 +784,12 @@ function drawPlayerProfile() {
 
 function renderStats() {
   const players = Object.values(STATE.players);
-  const real = STATE.throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
   const container = document.getElementById('stats-content');
 
   if (!players.length) {
     container.innerHTML = '<div class="card empty-note">Not enough darts thrown yet -- check back after more matches.</div>';
     return;
   }
-
-  let biggest = null;
-  real.forEach(t => { if (!biggest || t.value > biggest.value) biggest = t; });
-
-  const counts = {};
-  real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
-  let favBase = null, favCount = 0;
-  Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
 
   let highestCheckout = null;
   STATE.matches.forEach(m => {
@@ -750,24 +824,6 @@ function renderStats() {
 
   container.innerHTML = `
     <div class="card" style="display:flex; align-items:center; gap:16px;">
-      <div class="icon" style="font-size:34px;">🎯</div>
-      <div>
-        <div style="font-weight:700;">Biggest single dart</div>
-        <div style="font-size:14px; color:var(--board-soft);">
-          ${biggest ? `${biggest.player} hit ${formatDart(biggest)} for ${biggest.value} points.` : 'No data yet.'}
-        </div>
-      </div>
-    </div>
-    <div class="card" style="display:flex; align-items:center; gap:16px;">
-      <div class="icon" style="font-size:34px;">🔢</div>
-      <div>
-        <div style="font-weight:700;">League favorite number</div>
-        <div style="font-size:14px; color:var(--board-soft);">
-          ${favBase !== null ? `${favBase} -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every match.` : 'No data yet.'}
-        </div>
-      </div>
-    </div>
-    <div class="card" style="display:flex; align-items:center; gap:16px;">
       <div class="icon" style="font-size:34px;">🏁</div>
       <div>
         <div style="font-weight:700;">Highest checkout</div>
@@ -780,9 +836,59 @@ function renderStats() {
     ${leaderboard('Most 180s', 's180', p => p.s180)}
     ${leaderboard('Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`)}
     ${leaderboard('Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`)}
+    ${leaderboard('Most bulls hit', 'bulls', p => p.bulls)}
     ${leaderboard('Most busts', 'busts', p => p.busts)}
     ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1))}
+
+    <div class="section-head" style="margin-top:8px;">
+      <h2 style="font-size:20px;">Hits by number</h2>
+      <p>How often each player has hit every number on the board. Click a column to sort.</p>
+    </div>
+    <div class="card" id="number-grid-wrap"></div>
   `;
+
+  renderNumberGrid(players);
+}
+
+let numberGridSort = { key: 20, dir: -1 };
+
+function renderNumberGrid(players) {
+  const numbers = [...Array(20).keys()].map(n => n + 1).concat([25]);
+
+  function draw() {
+    const sorted = [...players].sort((a, b) => {
+      const av = a.number_counts[numberGridSort.key] || 0;
+      const bv = b.number_counts[numberGridSort.key] || 0;
+      return (av - bv) * numberGridSort.dir;
+    });
+    const head = numbers.map(n => `
+      <th class="num sortable" onclick="setNumberSort(${n})">
+        ${n === 25 ? 'Bull' : n}${numberGridSort.key === n ? (numberGridSort.dir === 1 ? ' ▲' : ' ▼') : ''}
+      </th>
+    `).join('');
+    const body = sorted.map(p => `
+      <tr>
+        <td class="player-name" style="position:sticky; left:0; background:var(--card);">${p.name}</td>
+        ${numbers.map(n => `<td class="num">${p.number_counts[n] || 0}</td>`).join('')}
+      </tr>
+    `).join('');
+    document.getElementById('number-grid-wrap').innerHTML = `
+      <div style="overflow-x:auto;">
+        <table style="min-width:900px;">
+          <thead><tr><th style="position:sticky; left:0; background:var(--card); z-index:2;">Player</th>${head}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  window.setNumberSort = function (n) {
+    if (numberGridSort.key === n) numberGridSort.dir *= -1;
+    else { numberGridSort.key = n; numberGridSort.dir = -1; }
+    draw();
+  };
+
+  draw();
 }
 
 function renderAll() {
