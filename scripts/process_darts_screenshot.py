@@ -115,7 +115,7 @@ def extract_match_data(client: "anthropic.Anthropic", image_path: Path, max_retr
 
     for attempt in range(1, max_retries + 1):
         try:
-            message = client.messages.create(
+            with client.messages.stream(
                 model=MODEL,
                 max_tokens=32000,
                 output_config={"effort": "medium"},
@@ -135,7 +135,8 @@ def extract_match_data(client: "anthropic.Anthropic", image_path: Path, max_retr
                         ],
                     }
                 ],
-            )
+            ) as stream:
+                message = stream.get_final_message()
         except Exception as e:
             last_error = e
             print(f"  API call failed on attempt {attempt}/{max_retries}: {e}")
@@ -205,7 +206,7 @@ def file_hash(path: Path) -> str:
 
 
 def main():
-    print("SCRIPT VERSION: 2026-09-02-v4 (max_tokens=32000, commit-always fix)")
+    print("SCRIPT VERSION: 2026-09-02-v5 (streaming API calls for large max_tokens)")
     print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
