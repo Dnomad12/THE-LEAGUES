@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darts — The Leagues</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chalk: #ede7d8;
+    --board: #211d19;
+    --board-soft: #4a423a;
+    --dartred: #a4243b;
+    --dartred-soft: #f3dade;
+    --dartgreen: #1f5c46;
+    --dartgreen-soft: #d8e8e0;
+    --brass: #b08a3e;
+    --card: #fbf8f1;
+    --line: #ddd4bf;
+    --shadow: 0 3px 14px rgba(33,29,25,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--chalk);
+    color: var(--board);
+    min-height: 100vh;
+  }
+
+  .figure { font-family: 'Space Mono', monospace; font-variant-numeric: tabular-nums; }
+  .display { font-family: 'Anton', sans-serif; font-weight: 400; letter-spacing: 0.5px; }
+
+  /* ---------- Header ---------- */
+  .header {
+    background: var(--board);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; color: var(--chalk); text-decoration: none; }
+  .brand-mark { width: 34px; height: 34px; flex-shrink: 0; }
+  .brand-text .sub { font-size: 10px; letter-spacing: 1.5px; color: var(--brass); text-transform: uppercase; }
+  .brand-text .title { font-family: 'Anton', sans-serif; font-size: 19px; letter-spacing: 0.5px; }
+
+  .nav { display: flex; gap: 2px; flex-wrap: wrap; }
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: #cfc6b8;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.06); color: var(--chalk); }
+  .nav-btn.active { background: var(--dartred); color: white; }
+  .nav-btn.home-link { text-decoration: none; display: inline-block; color: #cfc6b8; }
+
+  /* ---------- Layout ---------- */
+  .page { display: none; max-width: 1100px; margin: 0 auto; padding: 36px 24px 64px; }
+  .page.active { display: block; }
+
+  .section-head { margin-bottom: 22px; }
+  .section-head h2 { font-family: 'Anton', sans-serif; font-size: 28px; letter-spacing: 0.3px; }
+  .section-head p { color: var(--board-soft); font-size: 14px; margin-top: 4px; max-width: 60ch; }
+
+  /* ---------- Hero (Home) ---------- */
+  .hero {
+    background: var(--board);
+    color: var(--chalk);
+    border-radius: 14px;
+    padding: 40px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-count {
+    font-family: 'Anton', sans-serif;
+    font-size: 96px;
+    line-height: 0.9;
+    color: var(--dartred);
+    -webkit-text-stroke: 1.5px var(--brass);
+  }
+  .hero-count-label { font-size: 13px; color: #cfc6b8; margin-top: 8px; }
+  .hero-tagline { font-size: 15px; color: #cfc6b8; max-width: 46ch; margin-top: 18px; line-height: 1.55; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-box { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat-box .num { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 26px; color: var(--dartred); }
+  .stat-box .label { font-size: 12px; color: var(--board-soft); margin-top: 4px; }
+
+  .fun-fact {
+    background: var(--dartgreen-soft);
+    border: 1px solid var(--dartgreen);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .fun-fact .icon { font-size: 30px; }
+  .fun-fact .body strong { color: var(--dartgreen); }
+
+  /* ---------- Cards ---------- */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px; }
+
+  /* ---------- Wedge badge (multiplier) ---------- */
+  .wedge { display: inline-flex; align-items: center; gap: 5px; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; }
+  .wedge svg { display: block; }
+  .wedge.m1 { color: var(--board); }
+  .wedge.m2 { color: var(--dartgreen); }
+  .wedge.m3 { color: var(--dartred); }
+
+  /* ---------- Tables ---------- */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--board-soft);
+    font-weight: 600;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--board);
+    cursor: default;
+    white-space: nowrap;
+  }
+  thead th.sortable { cursor: pointer; }
+  thead th.sortable:hover { color: var(--dartred); }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(164,36,59,0.04); }
+  td.num, th.num { text-align: right; font-family: 'Space Mono', monospace; }
+
+  .rank-pos { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--board-soft); width: 26px; display: inline-block; }
+  .rank-pos.top { color: var(--brass); }
+  .player-name { font-weight: 700; }
+
+  /* ---------- Match cards ---------- */
+  .match-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; }
+  .match-top { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; cursor: pointer; }
+  .match-top:hover { background: rgba(164,36,59,0.03); }
+  .match-players { font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 0.3px; }
+  .match-players .winner { color: var(--dartred); }
+  .match-meta { font-size: 12px; color: var(--board-soft); }
+  .match-toggle { font-size: 12px; color: var(--brass); font-weight: 700; }
+  .match-detail { display: none; padding: 0 20px 20px; }
+  .match-detail.open { display: block; }
+  .round-table-wrap { overflow-x: auto; }
+  .round-table-wrap table { min-width: 480px; }
+  .bust-cell { color: var(--dartred); font-weight: 700; }
+
+  /* ---------- Players page ---------- */
+  .player-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .player-chip {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .player-chip.active { background: var(--dartred); border-color: var(--dartred); color: white; }
+
+  .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .profile-stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .profile-stat .num { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--dartgreen); }
+  .profile-stat .label { font-size: 11.5px; color: var(--board-soft); margin-top: 3px; }
+
+  /* ---------- Leaderboard list (Stats page) ---------- */
+  .lb-list { list-style: none; }
+  .lb-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { font-family: 'Anton', sans-serif; font-size: 20px; color: var(--brass); width: 30px; }
+  .lb-name { font-weight: 700; flex: 1; }
+  .lb-value { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--dartred); }
+  .lb-sub { font-size: 12px; color: var(--board-soft); }
+
+  .empty-note { color: var(--board-soft); font-size: 14px; padding: 24px; text-align: center; font-style: italic; }
+
+  /* ---------- Mobile bottom nav ---------- */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--board);
+    justify-content: space-around;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.25);
+  }
+  .mnav-btn {
+    background: none; border: none; color: #a99f8f;
+    font-size: 10.5px; font-weight: 600; display: flex; flex-direction: column;
+    align-items: center; gap: 3px; padding: 4px 6px; cursor: pointer; text-decoration: none;
+  }
+  .mnav-btn.active { color: var(--dartred); }
+  .mnav-icon { font-size: 17px; }
+
+  @media (max-width: 720px) {
+    .nav { display: none; }
+    .hero { padding: 26px; }
+    .hero-count { font-size: 64px; }
+    .mobile-nav { display: flex; }
+    .page { padding-bottom: 84px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#ede7d8" stroke="#b08a3e" stroke-width="2"/><circle cx="20" cy="20" r="13" fill="#211d19"/><circle cx="20" cy="20" r="7.5" fill="#a4243b"/><circle cx="20" cy="20" r="2.4" fill="#1f5c46"/></svg>
+      <div class="brand-text"><div class="sub">The Leagues</div><div class="title">Darts</div></div>
+    </a>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showPage('home')" id="nav-home">Home</button>
+      <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings">Rankings</button>
+      <button class="nav-btn" onclick="showPage('matches')" id="nav-matches">Matches</button>
+      <button class="nav-btn" onclick="showPage('players')" id="nav-players">Players</button>
+      <button class="nav-btn" onclick="showPage('stats')" id="nav-stats">Stats</button>
+      <a class="nav-btn home-link" href="index.html">Main Page</a>
+    </nav>
+  </div>
+</header>
+
+<nav class="mobile-nav">
+  <button class="mnav-btn active" onclick="showPage('home')" id="mnav-home"><span class="mnav-icon">🎯</span>Home</button>
+  <button class="mnav-btn" onclick="showPage('rankings')" id="mnav-rankings"><span class="mnav-icon">🏆</span>Ranks</button>
+  <button class="mnav-btn" onclick="showPage('matches')" id="mnav-matches"><span class="mnav-icon">📋</span>Matches</button>
+  <button class="mnav-btn" onclick="showPage('players')" id="mnav-players"><span class="mnav-icon">👤</span>Players</button>
+  <button class="mnav-btn" onclick="showPage('stats')" id="mnav-stats"><span class="mnav-icon">📊</span>Stats</button>
+  <a class="mnav-btn" href="index.html"><span class="mnav-icon">🏠</span>Main</a>
+</nav>
+
+<!-- ================= HOME ================= -->
+<section class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-count figure" id="hero-count">501</div>
+    <div class="hero-count-label">Where every leg begins.</div>
+    <p class="hero-tagline">Match data pulled straight from scoreboard screenshots -- every dart, every checkout, every bust, tracked down to the single throw.</p>
+  </div>
+
+  <div class="stat-row" id="home-stat-row"></div>
+
+  <div class="fun-fact" id="home-fun-fact" style="display:none;">
+    <div class="icon">🎯</div>
+    <div class="body" id="home-fun-fact-text"></div>
+  </div>
+
+  <div class="section-head">
+    <h2>Latest match</h2>
+  </div>
+  <div id="home-latest-match"></div>
+</section>
+
+<!-- ================= RANKINGS ================= -->
+<section class="page" id="page-rankings">
+  <div class="section-head">
+    <h2>Rankings</h2>
+    <p>Season averages across every recorded leg. Click a column to sort.</p>
+  </div>
+  <div class="card" id="rankings-wrap"></div>
+</section>
+
+<!-- ================= MATCHES ================= -->
+<section class="page" id="page-matches">
+  <div class="section-head">
+    <h2>Matches</h2>
+    <p>Every leg on record, most recent first. Tap a match to see the full round-by-round breakdown.</p>
+  </div>
+  <div id="matches-list"></div>
+</section>
+
+<!-- ================= PLAYERS ================= -->
+<section class="page" id="page-players">
+  <div class="section-head">
+    <h2>Players</h2>
+    <p>Pick a player to see their signature throw, accuracy split, and match history.</p>
+  </div>
+  <div class="player-picker" id="player-picker"></div>
+  <div id="player-profile"></div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="page" id="page-stats">
+  <div class="section-head">
+    <h2>League stats</h2>
+    <p>The numbers that don't fit in a normal leaderboard.</p>
+  </div>
+  <div id="stats-content"></div>
+</section>
+
+<script>
+const DATA_URLS = { matches: 'darts/matches.json', throws: 'darts/throws.json' };
+
+let STATE = { matches: [], throws: [], players: {}, byMatch: {}, selectedPlayer: null };
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn, .mnav-btn').forEach(b => b.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  const btn = document.getElementById('nav-' + name);
+  const mbtn = document.getElementById('mnav-' + name);
+  if (page) page.classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (mbtn) mbtn.classList.add('active');
+}
+
+function wedge(multiplier) {
+  const cls = multiplier === 3 ? 'm3' : multiplier === 2 ? 'm2' : 'm1';
+  const color = multiplier === 3 ? '#a4243b' : multiplier === 2 ? '#1f5c46' : '#211d19';
+  return `<span class="wedge ${cls}">
+    <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1 L13 12.5 L1 12.5 Z" fill="none" stroke="${color}" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    ×${multiplier}
+  </span>`;
+}
+
+function formatDart(t) {
+  if (t.not_thrown) return '';
+  if (t.is_miss || t.value === 0) return '-';
+  if (t.multiplier === 3) return 'T' + t.base;
+  if (t.multiplier === 2) return 'D' + t.base;
+  return String(t.base);
+}
+
+function fmtDate(iso) {
+  if (!iso) return 'Unknown date';
+  const d = new Date(iso + 'T00:00:00');
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function fmt1(n) { return (n === null || n === undefined) ? '—' : n.toFixed(1); }
+function fmtPct(n) { return (n === null || n === undefined) ? '—' : n.toFixed(1) + '%'; }
+
+// ---------- Aggregation ----------
+function aggregate(matches, throws) {
+  const players = {};
+  const byMatch = {};
+
+  throws.forEach(t => {
+    if (!byMatch[t.match_id]) byMatch[t.match_id] = [];
+    byMatch[t.match_id].push(t);
+  });
+
+  matches.forEach(m => {
+    (m.players || []).forEach(p => {
+      if (!players[p]) {
+        players[p] = {
+          name: p, matches: 0, wins: 0, losses: 0,
+          ppr_sum: 0, ppr_count: 0, first9_sum: 0, first9_count: 0,
+          darts_thrown: 0, checkout_makes: 0, checkout_attempts: 0,
+          s60: 0, s100: 0, s140: 0, s180: 0,
+          match_ids: [], _throws: []
+        };
+      }
+      const st = players[p];
+      st.matches++;
+      st.match_ids.push(m.match_id);
+      if (m.winner === p) st.wins++; else st.losses++;
+      const ls = (m.leg_stats || {})[p];
+      if (ls) {
+        if (ls.ppr != null) { st.ppr_sum += ls.ppr; st.ppr_count++; }
+        if (ls.first9_ppr != null) { st.first9_sum += ls.first9_ppr; st.first9_count++; }
+        st.darts_thrown += ls.darts_thrown || 0;
+        st.checkout_makes += ls.checkout_makes || 0;
+        st.checkout_attempts += ls.checkout_attempts || 0;
+        st.s60 += ls['60_plus'] || 0;
+        st.s100 += ls['100_plus'] || 0;
+        st.s140 += ls['140_plus'] || 0;
+        st.s180 += ls['180'] || 0;
+      }
+    });
+  });
+
+  throws.forEach(t => {
+    if (players[t.player]) players[t.player]._throws.push(t);
+  });
+
+  const bustSeen = new Set();
+  throws.forEach(t => {
+    if (t.bust && players[t.player]) {
+      const key = t.match_id + '|' + t.round + '|' + t.player;
+      if (!bustSeen.has(key)) {
+        bustSeen.add(key);
+        players[t.player].busts = (players[t.player].busts || 0) + 1;
+      }
+    }
+  });
+
+  Object.values(players).forEach(st => {
+    const real = st._throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
+    st.real_throws = real.length;
+    st.misses = st._throws.filter(t => t.is_miss).length;
+    st.triples = real.filter(t => t.multiplier === 3).length;
+    st.doubles = real.filter(t => t.multiplier === 2).length;
+    st.singles = real.filter(t => t.multiplier === 1).length;
+    st.biggest_dart = real.reduce((mx, t) => Math.max(mx, t.value), 0);
+    st.avg_dart = real.length ? real.reduce((s, t) => s + t.value, 0) / real.length : 0;
+    st.avg_ppr = st.ppr_count ? st.ppr_sum / st.ppr_count : null;
+    st.avg_first9 = st.first9_count ? st.first9_sum / st.first9_count : null;
+    st.checkout_pct = st.checkout_attempts ? (st.checkout_makes / st.checkout_attempts * 100) : null;
+    st.busts = st.busts || 0;
+
+    const counts = {};
+    real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
+    let favBase = null, favCount = 0;
+    Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
+    st.favorite_number = favBase;
+    st.favorite_number_count = favCount;
+
+    const combos = {};
+    real.forEach(t => { const k = t.base + '|' + t.multiplier; combos[k] = (combos[k] || 0) + 1; });
+    let favCombo = null, favComboCount = 0;
+    Object.entries(combos).forEach(([k, v]) => { if (v > favComboCount) { favComboCount = v; favCombo = k; } });
+    if (favCombo) {
+      const [b, m] = favCombo.split('|').map(Number);
+      st.favorite_dart = formatDart({ base: b, multiplier: m, is_miss: false, not_thrown: false, value: 1 });
+      st.favorite_dart_count = favComboCount;
+    }
+
+    delete st._throws;
+  });
+
+  return { players, byMatch };
+}
+
+function buildMatchRounds(matchThrows) {
+  const rounds = {};
+  matchThrows.forEach(t => {
+    if (!rounds[t.round]) rounds[t.round] = {};
+    if (!rounds[t.round][t.player]) rounds[t.round][t.player] = [];
+    rounds[t.round][t.player].push(t);
+  });
+  return Object.keys(rounds).map(Number).sort((a, b) => a - b).map(rn => {
+    const cells = {};
+    Object.entries(rounds[rn]).forEach(([player, ts]) => {
+      ts.sort((a, b) => a.throw_number - b.throw_number);
+      cells[player] = {
+        darts: ts.map(formatDart).join(' '),
+        score: ts[0].round_score,
+        remaining: ts[0].remaining,
+        bust: ts[0].bust
+      };
+    });
+    return { round: rn, cells };
+  });
+}
+
+// ---------- Renderers ----------
+function renderHome() {
+  const { matches, players } = STATE;
+  const totalDarts = Object.values(players).reduce((s, p) => s + p.real_throws, 0);
+  const total180s = Object.values(players).reduce((s, p) => s + p.s180, 0);
+
+  document.getElementById('home-stat-row').innerHTML = `
+    <div class="stat-box"><div class="num">${matches.length}</div><div class="label">Matches logged</div></div>
+    <div class="stat-box"><div class="num">${totalDarts}</div><div class="label">Darts thrown</div></div>
+    <div class="stat-box"><div class="num">${total180s}</div><div class="label">180s hit</div></div>
+    <div class="stat-box"><div class="num">${Object.keys(players).length}</div><div class="label">Players</div></div>
+  `;
+
+  const real = STATE.throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
+  if (real.length) {
+    const counts = {};
+    real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
+    let favBase = null, favCount = 0;
+    Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
+    document.getElementById('home-fun-fact').style.display = 'flex';
+    document.getElementById('home-fun-fact-text').innerHTML =
+      `The league's favorite number so far is <strong>${favBase}</strong> -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every leg.`;
+  }
+
+  const sorted = [...matches].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.time || '').localeCompare(a.time || ''));
+  const latest = sorted[0];
+  const container = document.getElementById('home-latest-match');
+  if (!latest) {
+    container.innerHTML = '<div class="card empty-note">No matches recorded yet -- upload a screenshot to darts/incoming/ to get started.</div>';
+    return;
+  }
+  container.innerHTML = matchCardHTML(latest, false, 'home');
+}
+
+function matchCardHTML(m, expanded, uidPrefix) {
+  const uid = uidPrefix + '-' + m.match_id;
+  const playersStr = m.players.map(p => p === m.winner ? `<span class="winner">${p}</span>` : p).join(' vs ');
+  return `
+    <div class="match-card">
+      <div class="match-top" onclick="toggleMatch('${uid}')">
+        <div>
+          <div class="match-players">${playersStr}</div>
+          <div class="match-meta">${fmtDate(m.date)} · ${m.time || ''} · ${m.game_type || '501'} · ${m.checkout_rule || ''}</div>
+        </div>
+        <div class="match-toggle" id="toggle-${uid}">${expanded ? 'Hide details' : 'Show details'}</div>
+      </div>
+      <div class="match-detail${expanded ? ' open' : ''}" id="detail-${uid}">
+        ${matchDetailHTML(m)}
+      </div>
+    </div>
+  `;
+}
+
+function matchDetailHTML(m) {
+  const mThrows = STATE.byMatch[m.match_id] || [];
+  const rounds = buildMatchRounds(mThrows);
+  const legStatRows = Object.entries(m.leg_stats || {}).map(([p, ls]) => `
+    <tr>
+      <td class="player-name">${p}</td>
+      <td class="num">${fmt1(ls.ppr)}</td>
+      <td class="num">${fmt1(ls.first9_ppr)}</td>
+      <td class="num">${ls.darts_thrown ?? '—'}</td>
+      <td class="num">${ls.checkout_pct != null ? ls.checkout_pct.toFixed(1) + '% (' + ls.checkout_makes + '/' + ls.checkout_attempts + ')' : '—'}</td>
+      <td class="num">${ls.checkout_points ?? '—'}</td>
+      <td class="num">${ls['60_plus'] ?? 0}</td>
+      <td class="num">${ls['100_plus'] ?? 0}</td>
+      <td class="num">${ls['140_plus'] ?? 0}</td>
+      <td class="num">${ls['180'] ?? 0}</td>
+    </tr>
+  `).join('');
+
+  const roundRows = rounds.map(r => {
+    const cells = m.players.map(p => {
+      const c = r.cells[p];
+      if (!c) return '<td>—</td>';
+      const scoreDisplay = c.bust ? '<span class="bust-cell">BUST</span>' : (c.score ?? '—');
+      return `<td>
+        <div class="figure" style="font-weight:700;">${scoreDisplay}</div>
+        <div style="font-size:11.5px;color:var(--board-soft);">${c.darts}</div>
+        <div class="figure" style="font-size:11px;color:var(--board-soft);text-decoration:line-through;">${c.remaining}</div>
+      </td>`;
+    }).join('');
+    return `<tr><td class="num">${r.round}</td>${cells}</tr>`;
+  }).join('');
+
+  return `
+    <div style="overflow-x:auto; margin-bottom:16px;">
+      <table>
+        <thead><tr><th>Player</th><th class="num">PPR</th><th class="num">1st 9</th><th class="num">Darts</th><th class="num">Checkout</th><th class="num">C/O Pts</th><th class="num">60+</th><th class="num">100+</th><th class="num">140+</th><th class="num">180</th></tr></thead>
+        <tbody>${legStatRows}</tbody>
+      </table>
+    </div>
+    <div class="round-table-wrap">
+      <table>
+        <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${p}</th>`).join('')}</tr></thead>
+        <tbody>${roundRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function toggleMatch(uid) {
+  const detail = document.getElementById('detail-' + uid);
+  const toggle = document.getElementById('toggle-' + uid);
+  if (!detail) return;
+  const open = detail.classList.toggle('open');
+  if (toggle) toggle.textContent = open ? 'Hide details' : 'Show details';
+}
+
+let rankingsSort = { key: 'avg_ppr', dir: -1 };
+
+function renderRankings() {
+  const rows = Object.values(STATE.players);
+  const cols = [
+    { key: 'name', label: 'Player' },
+    { key: 'matches', label: 'MP', num: true },
+    { key: 'wins', label: 'W-L', num: true },
+    { key: 'avg_ppr', label: 'Avg PPR', num: true },
+    { key: 'avg_first9', label: 'First 9', num: true },
+    { key: 'checkout_pct', label: 'Checkout', num: true },
+    { key: 's180', label: '180s', num: true },
+    { key: 'busts', label: 'Busts', num: true },
+  ];
+
+  function draw() {
+    const sorted = [...rows].sort((a, b) => {
+      const av = a[rankingsSort.key], bv = b[rankingsSort.key];
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === 'string') return av.localeCompare(bv) * rankingsSort.dir;
+      return (av - bv) * rankingsSort.dir;
+    });
+    const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSort.key === c.key ? (rankingsSort.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
+    const body = sorted.map((r, i) => `
+      <tr>
+        <td><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${r.name}</span></td>
+        <td class="num">${r.matches}</td>
+        <td class="num">${r.wins}-${r.losses}</td>
+        <td class="num">${fmt1(r.avg_ppr)}</td>
+        <td class="num">${fmt1(r.avg_first9)}</td>
+        <td class="num">${fmtPct(r.checkout_pct)}</td>
+        <td class="num">${r.s180}</td>
+        <td class="num">${r.busts}</td>
+      </tr>
+    `).join('');
+    document.getElementById('rankings-wrap').innerHTML = rows.length
+      ? `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`
+      : '<div class="empty-note">No matches recorded yet.</div>';
+  }
+
+  window.setSort = function (key) {
+    if (rankingsSort.key === key) rankingsSort.dir *= -1;
+    else { rankingsSort.key = key; rankingsSort.dir = -1; }
+    draw();
+  };
+
+  draw();
+}
+
+function renderMatches() {
+  const sorted = [...STATE.matches].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.time || '').localeCompare(a.time || ''));
+  const container = document.getElementById('matches-list');
+  container.innerHTML = sorted.length
+    ? sorted.map(m => matchCardHTML(m, false, 'matches')).join('')
+    : '<div class="card empty-note">No matches recorded yet.</div>';
+}
+
+function renderPlayers() {
+  const names = Object.keys(STATE.players).sort();
+  const picker = document.getElementById('player-picker');
+  if (!names.length) {
+    picker.innerHTML = '';
+    document.getElementById('player-profile').innerHTML = '<div class="card empty-note">No players recorded yet.</div>';
+    return;
+  }
+  if (!STATE.selectedPlayer || !names.includes(STATE.selectedPlayer)) STATE.selectedPlayer = names[0];
+
+  picker.innerHTML = names.map(n => `<div class="player-chip ${n === STATE.selectedPlayer ? 'active' : ''}" onclick="selectPlayer('${n}')">${n}</div>`).join('');
+  drawPlayerProfile();
+}
+
+function selectPlayer(name) {
+  STATE.selectedPlayer = name;
+  renderPlayers();
+}
+
+function drawPlayerProfile() {
+  const p = STATE.players[STATE.selectedPlayer];
+  if (!p) return;
+  const accuracyTotal = p.singles + p.doubles + p.triples + p.misses;
+  const pct = n => accuracyTotal ? Math.round(n / accuracyTotal * 100) : 0;
+
+  const matchesForPlayer = STATE.matches
+    .filter(m => (m.players || []).includes(p.name))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  document.getElementById('player-profile').innerHTML = `
+    <div class="profile-grid">
+      <div class="profile-stat"><div class="num">${p.wins}-${p.losses}</div><div class="label">Record</div></div>
+      <div class="profile-stat"><div class="num">${fmt1(p.avg_ppr)}</div><div class="label">Avg PPR</div></div>
+      <div class="profile-stat"><div class="num">${fmtPct(p.checkout_pct)}</div><div class="label">Checkout rate</div></div>
+      <div class="profile-stat"><div class="num">${p.s180}</div><div class="label">180s</div></div>
+      <div class="profile-stat"><div class="num">${p.biggest_dart}</div><div class="label">Biggest single dart</div></div>
+      <div class="profile-stat"><div class="num">${p.busts}</div><div class="label">Busts</div></div>
+    </div>
+
+    <div class="fun-fact">
+      <div class="icon">🎯</div>
+      <div class="body">
+        ${p.favorite_dart
+          ? `Signature throw: <strong>${p.favorite_dart}</strong> (hit ${p.favorite_dart_count} time${p.favorite_dart_count === 1 ? '' : 's'}).${p.favorite_dart.replace(/^[TD]/, '') !== String(p.favorite_number) ? ` Favorite number overall: <strong>${p.favorite_number}</strong>.` : ''}`
+          : 'Not enough darts thrown yet to find a signature throw.'}
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700; margin-bottom:12px;">Throw split (${p.real_throws} scored darts, ${p.misses} misses)</div>
+      <div style="display:flex; gap:6px; height:26px; border-radius:6px; overflow:hidden; margin-bottom:10px;">
+        <div style="width:${pct(p.singles)}%; background:var(--board-soft);" title="Singles"></div>
+        <div style="width:${pct(p.doubles)}%; background:var(--dartgreen);" title="Doubles"></div>
+        <div style="width:${pct(p.triples)}%; background:var(--dartred);" title="Triples"></div>
+        <div style="width:${pct(p.misses)}%; background:var(--line);" title="Misses"></div>
+      </div>
+      <div style="font-size:12.5px; color:var(--board-soft); display:flex; gap:18px; flex-wrap:wrap;">
+        <span>${wedge(1)} Singles: ${p.singles}</span>
+        <span>${wedge(2)} Doubles: ${p.doubles}</span>
+        <span>${wedge(3)} Triples: ${p.triples}</span>
+        <span>Misses: ${p.misses}</span>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:20px;">Match history</h2></div>
+    ${matchesForPlayer.map(m => matchCardHTML(m, false, 'player-' + p.name)).join('') || '<div class="card empty-note">No matches yet.</div>'}
+  `;
+}
+
+function renderStats() {
+  const players = Object.values(STATE.players);
+  const real = STATE.throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
+  const container = document.getElementById('stats-content');
+
+  if (!players.length) {
+    container.innerHTML = '<div class="card empty-note">Not enough darts thrown yet -- check back after more matches.</div>';
+    return;
+  }
+
+  let biggest = null;
+  real.forEach(t => { if (!biggest || t.value > biggest.value) biggest = t; });
+
+  const counts = {};
+  real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
+  let favBase = null, favCount = 0;
+  Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
+
+  let highestCheckout = null;
+  STATE.matches.forEach(m => {
+    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+      if (ls.checkout_points != null && (!highestCheckout || ls.checkout_points > highestCheckout.points)) {
+        highestCheckout = { player: p, points: ls.checkout_points, date: m.date };
+      }
+    });
+  });
+
+  function leaderboard(title, sortKey, formatter, sub) {
+    const sorted = [...players].filter(p => p[sortKey] > 0).sort((a, b) => b[sortKey] - a[sortKey]).slice(0, 8);
+    if (!sorted.length) return `<div class="card"><div style="font-weight:700; margin-bottom:8px;">${title}</div><div class="empty-note">No data yet.</div></div>`;
+    return `
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:8px;">${title}</div>
+        <ul class="lb-list">
+          ${sorted.map((p, i) => `
+            <li class="lb-row">
+              <div class="lb-rank">${i + 1}</div>
+              <div class="lb-name">${p.name}</div>
+              <div>
+                <div class="lb-value">${formatter(p)}</div>
+                ${sub ? `<div class="lb-sub">${sub(p)}</div>` : ''}
+              </div>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="card" style="display:flex; align-items:center; gap:16px;">
+      <div class="icon" style="font-size:34px;">🎯</div>
+      <div>
+        <div style="font-weight:700;">Biggest single dart</div>
+        <div style="font-size:14px; color:var(--board-soft);">
+          ${biggest ? `${biggest.player} hit ${formatDart(biggest)} for ${biggest.value} points.` : 'No data yet.'}
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex; align-items:center; gap:16px;">
+      <div class="icon" style="font-size:34px;">🔢</div>
+      <div>
+        <div style="font-weight:700;">League favorite number</div>
+        <div style="font-size:14px; color:var(--board-soft);">
+          ${favBase !== null ? `${favBase} -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every match.` : 'No data yet.'}
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display:flex; align-items:center; gap:16px;">
+      <div class="icon" style="font-size:34px;">🏁</div>
+      <div>
+        <div style="font-weight:700;">Highest checkout</div>
+        <div style="font-size:14px; color:var(--board-soft);">
+          ${highestCheckout ? `${highestCheckout.player} checked out from ${highestCheckout.points} (${fmtDate(highestCheckout.date)}).` : 'No data yet.'}
+        </div>
+      </div>
+    </div>
+
+    ${leaderboard('Most 180s', 's180', p => p.s180)}
+    ${leaderboard('Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`)}
+    ${leaderboard('Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`)}
+    ${leaderboard('Most busts', 'busts', p => p.busts)}
+    ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1))}
+  `;
+}
+
+function renderAll() {
+  renderHome();
+  renderRankings();
+  renderMatches();
+  renderPlayers();
+  renderStats();
+}
+
+async function init() {
+  try {
+    const [matchesRes, throwsRes] = await Promise.allSettled([
+      fetch(DATA_URLS.matches).then(r => r.json()),
+      fetch(DATA_URLS.throws).then(r => r.json()),
+    ]);
+
+    STATE.matches = matchesRes.status === 'fulfilled' ? matchesRes.value : [];
+    STATE.throws = throwsRes.status === 'fulfilled' ? throwsRes.value : [];
+
+    const { players, byMatch } = aggregate(STATE.matches, STATE.throws);
+    STATE.players = players;
+    STATE.byMatch = byMatch;
+
+    renderAll();
+  } catch (err) {
+    console.error('Darts site init error:', err);
+    document.getElementById('home-latest-match').innerHTML =
+      '<div class="card empty-note">Could not load match data. Check darts/matches.json and darts/throws.json exist in this repo.</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
