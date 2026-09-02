@@ -44,5 +44,235 @@
     "source_image": "IMG_6076.jpeg",
     "source_hash": "0d6a599c51e02ba58f9c9cc4610d4b99ce4248451aff14bdb1178117316f66e8",
     "processed_at": "2026-09-02T06:48:32.413434+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "20:02",
+    "duration_minutes": 13,
+    "duration_seconds": 13,
+    "players": [
+      "MARCEYY",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "MARCEYY": {
+        "ppr": 29.35,
+        "first9_ppr": 47.67,
+        "darts_thrown": 51,
+        "checkout_pct": 0,
+        "checkout_attempts": 6,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 30.67,
+        "first9_ppr": 37.33,
+        "darts_thrown": 49,
+        "checkout_pct": 14.29,
+        "checkout_attempts": 7,
+        "checkout_makes": 1,
+        "checkout_points": 12,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_20-02_img_6071",
+    "source_image": "IMG_6071.jpeg",
+    "source_hash": "6e9d750e383377fa85a0965248362ef774f52ba65d2b78a83875fab2660653f9",
+    "processed_at": "2026-09-02T12:18:01.430060+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "20:08",
+    "duration_minutes": 6,
+    "duration_seconds": 28,
+    "players": [
+      "DNOMAD12",
+      "MARCEYY"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 57.81,
+        "first9_ppr": 61.0,
+        "darts_thrown": 26,
+        "checkout_pct": 50.0,
+        "checkout_attempts": 2,
+        "checkout_makes": 1,
+        "checkout_points": 35,
+        "60_plus": 2,
+        "100_plus": 1,
+        "140_plus": 0,
+        "180": 0
+      },
+      "MARCEYY": {
+        "ppr": 39.5,
+        "first9_ppr": 30.67,
+        "darts_thrown": 24,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_20-08_img_6072",
+    "source_image": "IMG_6072.jpeg",
+    "source_hash": "98fb57e180291e9632e47b0ecab2d3234fdcddf470853a8609ebec604ab1746b",
+    "processed_at": "2026-09-02T12:18:46.571611+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "20:18",
+    "duration_minutes": 9,
+    "duration_seconds": 28,
+    "players": [
+      "MARCEYY",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "MARCEYY": {
+        "ppr": 35.85,
+        "first9_ppr": 39.0,
+        "darts_thrown": 39,
+        "checkout_pct": 0,
+        "checkout_attempts": 1,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 39.55,
+        "first9_ppr": 33.33,
+        "darts_thrown": 38,
+        "checkout_pct": 14.29,
+        "checkout_attempts": 7,
+        "checkout_makes": 1,
+        "checkout_points": 20,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_20-18_img_6073",
+    "source_image": "IMG_6073.jpeg",
+    "source_hash": "cc7a379d0663333353a665e22937564c3eb0d969fbc7841b44c818036087aa20",
+    "processed_at": "2026-09-02T12:20:09.462023+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "20:29",
+    "duration_minutes": 10,
+    "duration_seconds": 30,
+    "players": [
+      "DNOMAD12",
+      "MARCEYY"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 41.75,
+        "first9_ppr": 37.0,
+        "darts_thrown": 36,
+        "checkout_pct": 33.33,
+        "checkout_attempts": 3,
+        "checkout_makes": 1,
+        "checkout_points": 23,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "MARCEYY": {
+        "ppr": 35.82,
+        "first9_ppr": 31.67,
+        "darts_thrown": 33,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_20-29_img_6074",
+    "source_image": "IMG_6074.jpeg",
+    "source_hash": "44f2cc5b242b9fe98befdd3c3346019c00d46af749318672445f2c25a6ac6820",
+    "processed_at": "2026-09-02T12:21:00.833884+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In, Straight Out",
+    "raw_date": "08.08.26",
+    "date": "2026-08-08",
+    "time": "21:06",
+    "duration_minutes": 14,
+    "duration_seconds": 21,
+    "players": [
+      "DNOMAD12",
+      "MARCEYY"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 41.75,
+        "first9_ppr": 38.67,
+        "darts_thrown": 36,
+        "checkout_pct": 33.33,
+        "checkout_attempts": 3,
+        "checkout_makes": 1,
+        "checkout_points": 39,
+        "60_plus": 3,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "MARCEYY": {
+        "ppr": 32.73,
+        "first9_ppr": 23.33,
+        "darts_thrown": 33,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-08-08_21-06_img_6075",
+    "source_image": "IMG_6075.jpeg",
+    "source_hash": "71eeee8f91f74194fbf95c5f6d7b684d0f375ba28ce2ef46c99978c4d1edd495",
+    "processed_at": "2026-09-02T12:21:55.826300+00:00"
   }
 ]
