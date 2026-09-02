@@ -117,7 +117,7 @@ def extract_match_data(client: "anthropic.Anthropic", image_path: Path, max_retr
         try:
             with client.messages.stream(
                 model=MODEL,
-                max_tokens=32000,
+                max_tokens=60000,
                 output_config={"effort": "medium"},
                 messages=[
                     {
