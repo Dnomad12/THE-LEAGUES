@@ -53,7 +53,7 @@ jobs:
         run: python scripts/process_darts_screenshot.py
 
       - name: Commit and push results
-        if: steps.check.outputs.has_new == 'true'
+        if: always() && steps.check.outputs.has_new == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Auto-extract darts match data"
