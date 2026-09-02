@@ -14,6 +14,7 @@ import json
 import base64
 import hashlib
 import re
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 
@@ -108,45 +109,80 @@ def image_to_base64(path: Path):
     return media_type, base64.standard_b64encode(data).decode("utf-8")
 
 
-def extract_match_data(client: "anthropic.Anthropic", image_path: Path) -> dict:
+def extract_match_data(client: "anthropic.Anthropic", image_path: Path, max_retries: int = 3) -> dict:
     media_type, b64 = image_to_base64(image_path)
-    message = client.messages.create(
-        model=MODEL,
-        max_tokens=16000,
-        output_config={"effort": "medium"},
-        messages=[
-            {
-                "role": "user",
-                "content": [
+    last_error = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            message = client.messages.create(
+                model=MODEL,
+                max_tokens=16000,
+                output_config={"effort": "medium"},
+                messages=[
                     {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": media_type,
-                            "data": b64,
-                        },
-                    },
-                    {"type": "text", "text": SCHEMA_PROMPT},
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": b64,
+                                },
+                            },
+                            {"type": "text", "text": SCHEMA_PROMPT},
+                        ],
+                    }
                 ],
-            }
-        ],
-    )
-    text = "".join(block.text for block in message.content if block.type == "text").strip()
-    # Defensively strip markdown fences in case the model adds them anyway.
-    text = re.sub(r"^```(json)?", "", text).strip()
-    text = re.sub(r"```$", "", text).strip()
+            )
+        except Exception as e:
+            last_error = e
+            print(f"  API call failed on attempt {attempt}/{max_retries}: {e}")
+            if attempt < max_retries:
+                wait = 2 ** attempt
+                print(f"  Retrying in {wait}s...")
+                time.sleep(wait)
+            continue
 
-    if not text:
-        raise ValueError(
-            f"Empty text response (stop_reason={message.stop_reason}). "
-            f"The model likely ran out of max_tokens budget on thinking before writing output."
-        )
+        if message.stop_reason == "max_tokens":
+            last_error = RuntimeError(
+                "Response was cut off at the max_tokens limit before finishing -- "
+                "the match likely has more rounds/players than usual."
+            )
+            print(f"  Attempt {attempt}/{max_retries}: {last_error}")
+            if attempt < max_retries:
+                time.sleep(2 ** attempt)
+            continue
 
-    try:
-        return json.loads(text)
-    except json.JSONDecodeError as e:
-        preview = text[:1000]
-        raise ValueError(f"Response was not valid JSON: {e}\n--- Raw response (first 1000 chars) ---\n{preview}") from e
+        text = "".join(block.text for block in message.content if block.type == "text").strip()
+        text = re.sub(r"^```(json)?", "", text).strip()
+        text = re.sub(r"```$", "", text).strip()
+
+        if not text:
+            last_error = RuntimeError(f"Empty text response (stop_reason={message.stop_reason}).")
+            print(f"  Attempt {attempt}/{max_retries}: {last_error}")
+            if attempt < max_retries:
+                wait = 2 ** attempt
+                print(f"  Retrying in {wait}s...")
+                time.sleep(wait)
+            continue
+
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            preview = text[:1000]
+            last_error = ValueError(
+                f"Response was not valid JSON: {e}\n--- Raw response (first 1000 chars) ---\n{preview}"
+            )
+            print(f"  Attempt {attempt}/{max_retries}: {last_error}")
+            if attempt < max_retries:
+                wait = 2 ** attempt
+                print(f"  Retrying in {wait}s...")
+                time.sleep(wait)
+            continue
+
+    raise last_error
 
 
 def load_json_list(path: Path) -> list:
@@ -169,6 +205,9 @@ def file_hash(path: Path) -> str:
 
 
 def main():
+    print("SCRIPT VERSION: 2026-09-02-v3 (retry logic + max_tokens=16000 + output_config effort=medium)")
+    print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
+
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         print("ERROR: ANTHROPIC_API_KEY environment variable is not set.")
