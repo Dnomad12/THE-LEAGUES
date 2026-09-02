@@ -278,11 +278,6 @@
     <div class="icon">🎯</div>
     <div class="body" id="home-fun-fact-text"></div>
   </div>
-
-  <div class="section-head">
-    <h2>Latest match</h2>
-  </div>
-  <div id="home-latest-match"></div>
 </section>
 
 <!-- ================= RANKINGS ================= -->
@@ -510,15 +505,6 @@ function renderHome() {
     document.getElementById('home-fun-fact-text').innerHTML =
       `The league's favorite number so far is <strong>${favBase}</strong> -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every leg.`;
   }
-
-  const sorted = [...matches].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.time || '').localeCompare(a.time || ''));
-  const latest = sorted[0];
-  const container = document.getElementById('home-latest-match');
-  if (!latest) {
-    container.innerHTML = '<div class="card empty-note">No matches recorded yet -- upload a screenshot to darts/incoming/ to get started.</div>';
-    return;
-  }
-  container.innerHTML = matchCardHTML(latest, false, 'home');
 }
 
 function computeAchievements(matches, players) {
@@ -823,7 +809,19 @@ function renderStats() {
   }
 
   container.innerHTML = `
-    <div class="card" style="display:flex; align-items:center; gap:16px;">
+    <div class="section-head">
+      <h2 style="font-size:20px;">Hits by number</h2>
+      <p>How often each player has hit every number on the board. Click a column to sort.</p>
+    </div>
+    <div class="card" id="number-grid-wrap"></div>
+
+    <div class="section-head" style="margin-top:8px;">
+      <h2 style="font-size:20px;">League heatmap</h2>
+      <p>Every dart thrown so far, mapped onto the board.</p>
+    </div>
+    <div class="card" id="dartboard-wrap" style="display:flex; justify-content:center;"></div>
+
+    <div class="card" style="display:flex; align-items:center; gap:16px; margin-top:8px;">
       <div class="icon" style="font-size:34px;">🏁</div>
       <div>
         <div style="font-weight:700;">Highest checkout</div>
@@ -839,15 +837,10 @@ function renderStats() {
     ${leaderboard('Most bulls hit', 'bulls', p => p.bulls)}
     ${leaderboard('Most busts', 'busts', p => p.busts)}
     ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1))}
-
-    <div class="section-head" style="margin-top:8px;">
-      <h2 style="font-size:20px;">Hits by number</h2>
-      <p>How often each player has hit every number on the board. Click a column to sort.</p>
-    </div>
-    <div class="card" id="number-grid-wrap"></div>
   `;
 
   renderNumberGrid(players);
+  renderDartboardHeatmap(players);
 }
 
 let numberGridSort = { key: 20, dir: -1 };
@@ -891,6 +884,63 @@ function renderNumberGrid(players) {
   draw();
 }
 
+function renderDartboardHeatmap(players) {
+  const order = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+  const totals = {};
+  order.forEach(n => { totals[n] = 0; });
+  let bullTotal = 0;
+  players.forEach(p => {
+    order.forEach(n => { totals[n] += (p.number_counts[n] || 0); });
+    bullTotal += (p.number_counts[25] || 0);
+  });
+
+  const maxCount = Math.max(1, ...Object.values(totals), bullTotal);
+  const cx = 220, cy = 220, outerR = 200, innerR = 42;
+  const segAngle = 360 / order.length;
+
+  function polar(r, angleDeg) {
+    const rad = angleDeg * Math.PI / 180;
+    return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+  }
+
+  function heatColor(count) {
+    const t = count / maxCount;
+    const c1 = [251, 248, 241], c2 = [164, 36, 59];
+    const mix = (a, b) => Math.round(a + (b - a) * t);
+    return `rgb(${mix(c1[0], c2[0])},${mix(c1[1], c2[1])},${mix(c1[2], c2[2])})`;
+  }
+
+  let wedges = '';
+  order.forEach((num, i) => {
+    const a0 = i * segAngle - segAngle / 2;
+    const a1 = i * segAngle + segAngle / 2;
+    const p1 = polar(outerR, a0), p2 = polar(outerR, a1);
+    const p3 = polar(innerR, a1), p4 = polar(innerR, a0);
+    const path = `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${outerR} ${outerR} 0 0 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)} A ${innerR} ${innerR} 0 0 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)} Z`;
+    const fill = heatColor(totals[num]);
+    const textColor = totals[num] / maxCount > 0.55 ? '#fbf8f1' : '#211d19';
+    const lp = polar((outerR + innerR) / 2 + 20, i * segAngle);
+    const cp = polar((outerR + innerR) / 2 - 16, i * segAngle);
+    wedges += `
+      <path d="${path}" fill="${fill}" stroke="#211d19" stroke-width="1.5"/>
+      <text x="${lp.x.toFixed(2)}" y="${lp.y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-weight="700" font-size="15" fill="${textColor}">${num}</text>
+      <text x="${cp.x.toFixed(2)}" y="${cp.y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="'Space Mono', monospace" font-size="12" fill="${textColor}">${totals[num]}</text>
+    `;
+  });
+
+  const bullFill = heatColor(bullTotal);
+  const bullTextColor = bullTotal / maxCount > 0.55 ? '#fbf8f1' : '#211d19';
+
+  document.getElementById('dartboard-wrap').innerHTML = `
+    <svg viewBox="0 0 440 440" width="440" height="440" style="max-width:100%; height:auto;">
+      ${wedges}
+      <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="${bullFill}" stroke="#211d19" stroke-width="1.5"/>
+      <text x="${cx}" y="${cy - 6}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="11" fill="${bullTextColor}">BULL</text>
+      <text x="${cx}" y="${cy + 12}" text-anchor="middle" font-family="'Space Mono', monospace" font-size="14" fill="${bullTextColor}">${bullTotal}</text>
+    </svg>
+  `;
+}
+
 function renderAll() {
   renderHome();
   renderRankings();
@@ -916,7 +966,7 @@ async function init() {
     renderAll();
   } catch (err) {
     console.error('Darts site init error:', err);
-    document.getElementById('home-latest-match').innerHTML =
+    document.getElementById('home-achievements').innerHTML =
       '<div class="card empty-note">Could not load match data. Check darts/matches.json and darts/throws.json exist in this repo.</div>';
   }
 }
