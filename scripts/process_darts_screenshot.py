@@ -117,7 +117,7 @@ def extract_match_data(client: "anthropic.Anthropic", image_path: Path, max_retr
         try:
             message = client.messages.create(
                 model=MODEL,
-                max_tokens=16000,
+                max_tokens=32000,
                 output_config={"effort": "medium"},
                 messages=[
                     {
@@ -205,7 +205,7 @@ def file_hash(path: Path) -> str:
 
 
 def main():
-    print("SCRIPT VERSION: 2026-09-02-v3 (retry logic + max_tokens=16000 + output_config effort=medium)")
+    print("SCRIPT VERSION: 2026-09-02-v4 (max_tokens=32000, commit-always fix)")
     print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
