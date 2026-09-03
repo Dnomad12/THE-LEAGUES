@@ -1380,5 +1380,93 @@
     "source_image": "IMG_6070.JPG",
     "source_hash": "702158bb592d5b10bc32e7423ecdb35d176db4b6f4dd0174cb7f5634afdcc5fd",
     "processed_at": "2026-09-02T14:59:20.688481+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "03.07.26",
+    "date": "2026-07-03",
+    "time": "22:39",
+    "duration_minutes": 38,
+    "duration_seconds": 44,
+    "players": [
+      "SVENJA",
+      "MORGI",
+      "CECILE",
+      "JULIA",
+      "DNOMAD12"
+    ],
+    "winner": "JULIA",
+    "leg_stats": {
+      "SVENJA": {
+        "ppr": 30.38,
+        "first9_ppr": 20.33,
+        "darts_thrown": 48,
+        "checkout_pct": 0,
+        "checkout_attempts": 1,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "MORGI": {
+        "ppr": 29.13,
+        "first9_ppr": 29.67,
+        "darts_thrown": 48,
+        "checkout_pct": 0,
+        "checkout_attempts": 4,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "CECILE": {
+        "ppr": 30.44,
+        "first9_ppr": 50.67,
+        "darts_thrown": 48,
+        "checkout_pct": 0,
+        "checkout_attempts": 12,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 1,
+        "140_plus": 0,
+        "180": 0
+      },
+      "JULIA": {
+        "ppr": 31.98,
+        "first9_ppr": 52.0,
+        "darts_thrown": 47,
+        "checkout_pct": 14.29,
+        "checkout_attempts": 7,
+        "checkout_makes": 1,
+        "checkout_points": 20,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 32.73,
+        "first9_ppr": 20.67,
+        "darts_thrown": 45,
+        "checkout_pct": 0,
+        "checkout_attempts": 4,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-07-03_22-39_img_5957",
+    "source_image": "IMG_5957.JPG",
+    "source_hash": "64cd25cb6fb6c95550f86cf2d42d830cf7a29ca619ddaf44584385315e1f0a64",
+    "processed_at": "2026-09-03T06:43:56.155296+00:00"
   }
 ]
