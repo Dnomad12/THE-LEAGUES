@@ -318,7 +318,13 @@
 </section>
 
 <script>
-const DATA_URLS = { matches: 'darts/matches.json', throws: 'darts/throws.json' };
+const DATA_URLS = { matches: 'darts/matches.json', throws: 'darts/throws.json', aliases: 'darts/player_aliases.json' };
+let ALIASES = {};
+
+function dn(name) {
+  if (!name) return name;
+  return ALIASES[name.toUpperCase()] || name;
+}
 
 let STATE = { matches: [], throws: [], players: {}, byMatch: {}, selectedPlayer: null };
 
@@ -553,7 +559,7 @@ function achievementCardsHTML(achievements) {
       <div>
         <div class="value">${a.value}</div>
         <div class="label">${a.label}</div>
-        <div class="who">${a.who}</div>
+        <div class="who">${dn(a.who)}</div>
         <div class="label">${a.detail}</div>
       </div>
     </div>
@@ -562,7 +568,7 @@ function achievementCardsHTML(achievements) {
 
 function matchCardHTML(m, expanded, uidPrefix) {
   const uid = uidPrefix + '-' + m.match_id;
-  const playersStr = m.players.map(p => p === m.winner ? `<span class="winner">${p}</span>` : p).join(' vs ');
+  const playersStr = m.players.map(p => p === m.winner ? `<span class="winner">${dn(p)}</span>` : dn(p)).join(' vs ');
   return `
     <div class="match-card">
       <div class="match-top" onclick="toggleMatch('${uid}')">
@@ -584,7 +590,7 @@ function matchDetailHTML(m) {
   const rounds = buildMatchRounds(mThrows);
   const legStatRows = Object.entries(m.leg_stats || {}).map(([p, ls]) => `
     <tr>
-      <td class="player-name">${p}</td>
+      <td class="player-name">${dn(p)}</td>
       <td class="num">${fmt1(ls.ppr)}</td>
       <td class="num">${fmt1(ls.first9_ppr)}</td>
       <td class="num">${ls.darts_thrown ?? '—'}</td>
@@ -620,7 +626,7 @@ function matchDetailHTML(m) {
     </div>
     <div class="round-table-wrap">
       <table>
-        <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${p}</th>`).join('')}</tr></thead>
+        <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${dn(p)}</th>`).join('')}</tr></thead>
         <tbody>${roundRows}</tbody>
       </table>
     </div>
@@ -664,7 +670,7 @@ function renderRankings() {
     const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSort.key === c.key ? (rankingsSort.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
     const body = sorted.map((r, i) => `
       <tr>
-        <td><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${r.name}</span></td>
+        <td><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${dn(r.name)}</span></td>
         <td class="num">${r.matches}</td>
         <td class="num">${r.wins}-${r.losses}</td>
         <td class="num">${fmt1(r.avg_ppr)}</td>
@@ -709,7 +715,7 @@ function renderPlayers() {
   }
   if (!STATE.selectedPlayer || !names.includes(STATE.selectedPlayer)) STATE.selectedPlayer = names[0];
 
-  picker.innerHTML = names.map(n => `<div class="player-chip ${n === STATE.selectedPlayer ? 'active' : ''}" onclick="selectPlayer('${n}')">${n}</div>`).join('');
+  picker.innerHTML = names.map(n => `<div class="player-chip ${n === STATE.selectedPlayer ? 'active' : ''}" onclick="selectPlayer('${n}')">${dn(n)}</div>`).join('');
   drawPlayerProfile();
 }
 
@@ -803,7 +809,7 @@ function renderStats() {
           ${sorted.map((p, i) => `
             <li class="lb-row">
               <div class="lb-rank">${i + 1}</div>
-              <div class="lb-name">${p.name}</div>
+              <div class="lb-name">${dn(p.name)}</div>
               <div>
                 <div class="lb-value">${formatter(p)}</div>
                 ${sub ? `<div class="lb-sub">${sub(p)}</div>` : ''}
@@ -827,7 +833,7 @@ function renderStats() {
       <div>
         <div style="font-weight:700;">Highest checkout</div>
         <div style="font-size:14px; color:var(--board-soft);">
-          ${highestCheckout ? `${highestCheckout.player} checked out from ${highestCheckout.points} (${fmtDate(highestCheckout.date)}).` : 'No data yet.'}
+          ${highestCheckout ? `${dn(highestCheckout.player)} checked out from ${highestCheckout.points} (${fmtDate(highestCheckout.date)}).` : 'No data yet.'}
         </div>
       </div>
     </div>
@@ -861,7 +867,7 @@ function renderNumberGrid(players) {
     `).join('');
     const body = sorted.map(p => `
       <tr>
-        <td class="player-name" style="position:sticky; left:0; background:var(--card);">${p.name}</td>
+        <td class="player-name" style="position:sticky; left:0; background:var(--card);">${dn(p.name)}</td>
         ${numbers.map(n => `<td class="num">${p.number_counts[n] || 0}</td>`).join('')}
       </tr>
     `).join('');
@@ -949,13 +955,15 @@ function renderAll() {
 
 async function init() {
   try {
-    const [matchesRes, throwsRes] = await Promise.allSettled([
+    const [matchesRes, throwsRes, aliasesRes] = await Promise.allSettled([
       fetch(DATA_URLS.matches).then(r => r.json()),
       fetch(DATA_URLS.throws).then(r => r.json()),
+      fetch(DATA_URLS.aliases).then(r => r.json()),
     ]);
 
     STATE.matches = matchesRes.status === 'fulfilled' ? matchesRes.value : [];
     STATE.throws = throwsRes.status === 'fulfilled' ? throwsRes.value : [];
+    ALIASES = aliasesRes.status === 'fulfilled' ? aliasesRes.value : {};
 
     const { players, byMatch } = aggregate(STATE.matches, STATE.throws);
     STATE.players = players;
