@@ -202,6 +202,42 @@
 
   .empty-note { color: var(--board-soft); font-size: 14px; padding: 24px; text-align: center; font-style: italic; }
 
+  /* ---------- Scroll affordance for genuinely-wide tables ---------- */
+  .scroll-fade-wrap { position: relative; }
+  .scroll-fade-wrap::after {
+    content: '';
+    position: absolute; top: 0; right: 0; bottom: 0; width: 26px;
+    background: linear-gradient(to right, rgba(251,248,241,0), var(--card));
+    pointer-events: none;
+    display: none;
+  }
+  .mobile-hint { display: none; font-size: 11.5px; color: var(--brass); font-weight: 700; }
+
+  /* ---------- Responsive stacked-card tables ---------- */
+  @media (max-width: 640px) {
+    .scroll-fade-wrap::after { display: block; }
+    .mobile-hint { display: inline-block; margin-bottom: 8px; }
+
+    .responsive-table thead { display: none; }
+    .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
+    .responsive-table tr { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; padding: 4px 14px; }
+    .responsive-table tbody tr:hover { background: var(--card); }
+    .responsive-table td {
+      border-bottom: 1px dashed var(--line); padding: 7px 0; font-size: 13px;
+      display: flex; justify-content: space-between; align-items: center; text-align: right;
+    }
+    .responsive-table td:last-child { border-bottom: none; }
+    .responsive-table td[data-label]::before {
+      content: attr(data-label); font-weight: 600; color: var(--board-soft);
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; text-align: left;
+    }
+    .responsive-table td.card-title {
+      font-weight: 800; font-size: 16px; border-bottom: 2px solid var(--board);
+      padding: 10px 0 8px; margin-bottom: 2px; justify-content: flex-start;
+    }
+    .responsive-table td.card-title::before { content: none; }
+  }
+
   /* ---------- Mobile bottom nav ---------- */
   .mobile-nav {
     display: none;
@@ -590,16 +626,16 @@ function matchDetailHTML(m) {
   const rounds = buildMatchRounds(mThrows);
   const legStatRows = Object.entries(m.leg_stats || {}).map(([p, ls]) => `
     <tr>
-      <td class="player-name">${dn(p)}</td>
-      <td class="num">${fmt1(ls.ppr)}</td>
-      <td class="num">${fmt1(ls.first9_ppr)}</td>
-      <td class="num">${ls.darts_thrown ?? '—'}</td>
-      <td class="num">${ls.checkout_pct != null ? ls.checkout_pct.toFixed(1) + '% (' + ls.checkout_makes + '/' + ls.checkout_attempts + ')' : '—'}</td>
-      <td class="num">${ls.checkout_points ?? '—'}</td>
-      <td class="num">${ls['60_plus'] ?? 0}</td>
-      <td class="num">${ls['100_plus'] ?? 0}</td>
-      <td class="num">${ls['140_plus'] ?? 0}</td>
-      <td class="num">${ls['180'] ?? 0}</td>
+      <td class="player-name card-title">${dn(p)}</td>
+      <td class="num" data-label="PPR">${fmt1(ls.ppr)}</td>
+      <td class="num" data-label="1st 9">${fmt1(ls.first9_ppr)}</td>
+      <td class="num" data-label="Darts">${ls.darts_thrown ?? '—'}</td>
+      <td class="num" data-label="Checkout">${ls.checkout_pct != null ? ls.checkout_pct.toFixed(1) + '% (' + ls.checkout_makes + '/' + ls.checkout_attempts + ')' : '—'}</td>
+      <td class="num" data-label="C/O Pts">${ls.checkout_points ?? '—'}</td>
+      <td class="num" data-label="60+">${ls['60_plus'] ?? 0}</td>
+      <td class="num" data-label="100+">${ls['100_plus'] ?? 0}</td>
+      <td class="num" data-label="140+">${ls['140_plus'] ?? 0}</td>
+      <td class="num" data-label="180">${ls['180'] ?? 0}</td>
     </tr>
   `).join('');
 
@@ -618,17 +654,22 @@ function matchDetailHTML(m) {
   }).join('');
 
   return `
-    <div style="overflow-x:auto; margin-bottom:16px;">
-      <table>
-        <thead><tr><th>Player</th><th class="num">PPR</th><th class="num">1st 9</th><th class="num">Darts</th><th class="num">Checkout</th><th class="num">C/O Pts</th><th class="num">60+</th><th class="num">100+</th><th class="num">140+</th><th class="num">180</th></tr></thead>
-        <tbody>${legStatRows}</tbody>
-      </table>
+    <div class="scroll-fade-wrap" style="margin-bottom:16px;">
+      <div style="overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Player</th><th class="num">PPR</th><th class="num">1st 9</th><th class="num">Darts</th><th class="num">Checkout</th><th class="num">C/O Pts</th><th class="num">60+</th><th class="num">100+</th><th class="num">140+</th><th class="num">180</th></tr></thead>
+          <tbody>${legStatRows}</tbody>
+        </table>
+      </div>
     </div>
-    <div class="round-table-wrap">
-      <table>
-        <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${dn(p)}</th>`).join('')}</tr></thead>
-        <tbody>${roundRows}</tbody>
-      </table>
+    <div class="mobile-hint">Swipe to see all rounds →</div>
+    <div class="scroll-fade-wrap">
+      <div class="round-table-wrap">
+        <table>
+          <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${dn(p)}</th>`).join('')}</tr></thead>
+          <tbody>${roundRows}</tbody>
+        </table>
+      </div>
     </div>
   `;
 }
@@ -670,21 +711,21 @@ function renderRankings() {
     const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSort.key === c.key ? (rankingsSort.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
     const body = sorted.map((r, i) => `
       <tr>
-        <td><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${dn(r.name)}</span></td>
-        <td class="num">${r.matches}</td>
-        <td class="num">${r.wins}-${r.losses}</td>
-        <td class="num">${fmt1(r.avg_ppr)}</td>
-        <td class="num">${fmt1(r.avg_first9)}</td>
-        <td class="num">${fmtPct(r.checkout_pct)}</td>
-        <td class="num">${r.triples}</td>
-        <td class="num">${r.doubles}</td>
-        <td class="num">${r.bulls}</td>
-        <td class="num">${r.s180}</td>
-        <td class="num">${r.busts}</td>
+        <td class="card-title"><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${dn(r.name)}</span></td>
+        <td class="num" data-label="MP">${r.matches}</td>
+        <td class="num" data-label="W-L">${r.wins}-${r.losses}</td>
+        <td class="num" data-label="Avg PPR">${fmt1(r.avg_ppr)}</td>
+        <td class="num" data-label="First 9">${fmt1(r.avg_first9)}</td>
+        <td class="num" data-label="Checkout">${fmtPct(r.checkout_pct)}</td>
+        <td class="num" data-label="Triples">${r.triples}</td>
+        <td class="num" data-label="Doubles">${r.doubles}</td>
+        <td class="num" data-label="Bulls">${r.bulls}</td>
+        <td class="num" data-label="180s">${r.s180}</td>
+        <td class="num" data-label="Busts">${r.busts}</td>
       </tr>
     `).join('');
     document.getElementById('rankings-wrap').innerHTML = rows.length
-      ? `<div style="overflow-x:auto;"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
+      ? `<div style="overflow-x:auto;"><table class="responsive-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
       : '<div class="empty-note">No matches recorded yet.</div>';
   }
 
@@ -872,11 +913,14 @@ function renderNumberGrid(players) {
       </tr>
     `).join('');
     document.getElementById('number-grid-wrap').innerHTML = `
-      <div style="overflow-x:auto;">
-        <table style="min-width:900px;">
-          <thead><tr><th style="position:sticky; left:0; background:var(--card); z-index:2;">Player</th>${head}</tr></thead>
-          <tbody>${body}</tbody>
-        </table>
+      <div class="mobile-hint">Swipe to see all numbers →</div>
+      <div class="scroll-fade-wrap">
+        <div style="overflow-x:auto;">
+          <table style="min-width:900px;">
+            <thead><tr><th style="position:sticky; left:0; background:var(--card); z-index:2;">Player</th>${head}</tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
       </div>
     `;
   }
@@ -897,8 +941,10 @@ function renderDartboardHeatmap(numberCounts, targetId) {
   const bullTotal = numberCounts[25] || 0;
 
   const maxCount = Math.max(1, ...Object.values(totals), bullTotal);
-  const cx = 220, cy = 220, outerR = 200, innerR = 42;
+  const cx = 220, cy = 220, outerR = 168, innerR = 40;
   const segAngle = 360 / order.length;
+  const badgeR = 17;
+  const badgeDist = outerR + badgeR + 8;
 
   function polar(r, angleDeg) {
     const rad = angleDeg * Math.PI / 180;
@@ -913,6 +959,7 @@ function renderDartboardHeatmap(numberCounts, targetId) {
   }
 
   let wedges = '';
+  let badges = '';
   order.forEach((num, i) => {
     const a0 = i * segAngle - segAngle / 2;
     const a1 = i * segAngle + segAngle / 2;
@@ -921,12 +968,15 @@ function renderDartboardHeatmap(numberCounts, targetId) {
     const path = `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${outerR} ${outerR} 0 0 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)} A ${innerR} ${innerR} 0 0 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)} Z`;
     const fill = heatColor(totals[num]);
     const textColor = totals[num] / maxCount > 0.55 ? '#fbf8f1' : '#211d19';
-    const lp = polar((outerR + innerR) / 2 + 20, i * segAngle);
     const cp = polar((outerR + innerR) / 2 - 16, i * segAngle);
     wedges += `
       <path d="${path}" fill="${fill}" stroke="#211d19" stroke-width="1.5"/>
-      <text x="${lp.x.toFixed(2)}" y="${lp.y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-weight="700" font-size="15" fill="${textColor}">${num}</text>
       <text x="${cp.x.toFixed(2)}" y="${cp.y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="'Space Mono', monospace" font-size="12" fill="${textColor}">${totals[num]}</text>
+    `;
+    const bp = polar(badgeDist, i * segAngle);
+    badges += `
+      <circle cx="${bp.x.toFixed(2)}" cy="${bp.y.toFixed(2)}" r="${badgeR}" fill="#fbf8f1" stroke="#211d19" stroke-width="1.5"/>
+      <text x="${bp.x.toFixed(2)}" y="${bp.y.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-family="Inter, sans-serif" font-weight="700" font-size="14" fill="#211d19">${num}</text>
     `;
   });
 
@@ -941,6 +991,7 @@ function renderDartboardHeatmap(numberCounts, targetId) {
       <circle cx="${cx}" cy="${cy}" r="${innerR}" fill="${bullFill}" stroke="#211d19" stroke-width="1.5"/>
       <text x="${cx}" y="${cy - 6}" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="11" fill="${bullTextColor}">BULL</text>
       <text x="${cx}" y="${cy + 12}" text-anchor="middle" font-family="'Space Mono', monospace" font-size="14" fill="${bullTextColor}">${bullTotal}</text>
+      ${badges}
     </svg>
   `;
 }
@@ -964,6 +1015,9 @@ async function init() {
     STATE.matches = matchesRes.status === 'fulfilled' ? matchesRes.value : [];
     STATE.throws = throwsRes.status === 'fulfilled' ? throwsRes.value : [];
     ALIASES = aliasesRes.status === 'fulfilled' ? aliasesRes.value : {};
+    if (aliasesRes.status === 'rejected') {
+      console.error('Could not load darts/player_aliases.json (check it is valid JSON):', aliasesRes.reason);
+    }
 
     const { players, byMatch } = aggregate(STATE.matches, STATE.throws);
     STATE.players = players;
