@@ -65,11 +65,16 @@
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 600;
-    padding: 10px 14px;
+    padding: 9px 14px;
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
   }
+  .nav-icon-slot { display: inline-flex; opacity: 0.85; }
   .nav-btn:hover { background: rgba(255,255,255,0.06); color: var(--chalk); }
   .nav-btn.active { background: var(--dartred); color: white; }
   .nav-btn.home-link { text-decoration: none; display: inline-block; color: #cfc6b8; }
@@ -256,6 +261,7 @@
   }
   .mnav-btn.active { color: var(--dartred); }
   .mnav-icon { font-size: 17px; }
+  .nav-icon-slot { display: inline-flex; }
 
   @media (max-width: 720px) {
     .nav { display: none; }
@@ -275,23 +281,23 @@
       <div class="brand-text"><div class="sub">The Leagues</div><div class="title">Darts</div></div>
     </a>
     <nav class="nav">
-      <button class="nav-btn active" onclick="showPage('home')" id="nav-home">Home</button>
-      <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings">Rankings</button>
-      <button class="nav-btn" onclick="showPage('matches')" id="nav-matches">Matches</button>
-      <button class="nav-btn" onclick="showPage('players')" id="nav-players">Players</button>
-      <button class="nav-btn" onclick="showPage('stats')" id="nav-stats">Stats</button>
-      <a class="nav-btn home-link" href="index.html">Main Page</a>
+      <button class="nav-btn active" onclick="showPage('home')" id="nav-home"><span class="nav-icon-slot" id="navicon-home"></span>Home</button>
+      <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings"><span class="nav-icon-slot" id="navicon-rankings"></span>Rankings</button>
+      <button class="nav-btn" onclick="showPage('matches')" id="nav-matches"><span class="nav-icon-slot" id="navicon-matches"></span>Matches</button>
+      <button class="nav-btn" onclick="showPage('players')" id="nav-players"><span class="nav-icon-slot" id="navicon-players"></span>Players</button>
+      <button class="nav-btn" onclick="showPage('stats')" id="nav-stats"><span class="nav-icon-slot" id="navicon-stats"></span>Stats</button>
+      <a class="nav-btn home-link" href="index.html"><span class="nav-icon-slot" id="navicon-mainpage"></span>Main Page</a>
     </nav>
   </div>
 </header>
 
 <nav class="mobile-nav">
-  <button class="mnav-btn active" onclick="showPage('home')" id="mnav-home"><span class="mnav-icon">🎯</span>Home</button>
-  <button class="mnav-btn" onclick="showPage('rankings')" id="mnav-rankings"><span class="mnav-icon">🏆</span>Ranks</button>
-  <button class="mnav-btn" onclick="showPage('matches')" id="mnav-matches"><span class="mnav-icon">📋</span>Matches</button>
-  <button class="mnav-btn" onclick="showPage('players')" id="mnav-players"><span class="mnav-icon">👤</span>Players</button>
-  <button class="mnav-btn" onclick="showPage('stats')" id="mnav-stats"><span class="mnav-icon">📊</span>Stats</button>
-  <a class="mnav-btn" href="index.html"><span class="mnav-icon">🏠</span>Main</a>
+  <button class="mnav-btn active" onclick="showPage('home')" id="mnav-home"><span class="nav-icon-slot" id="mnavicon-home"></span>Home</button>
+  <button class="mnav-btn" onclick="showPage('rankings')" id="mnav-rankings"><span class="nav-icon-slot" id="mnavicon-rankings"></span>Ranks</button>
+  <button class="mnav-btn" onclick="showPage('matches')" id="mnav-matches"><span class="nav-icon-slot" id="mnavicon-matches"></span>Matches</button>
+  <button class="mnav-btn" onclick="showPage('players')" id="mnav-players"><span class="nav-icon-slot" id="mnavicon-players"></span>Players</button>
+  <button class="mnav-btn" onclick="showPage('stats')" id="mnav-stats"><span class="nav-icon-slot" id="mnavicon-stats"></span>Stats</button>
+  <a class="mnav-btn" href="index.html"><span class="nav-icon-slot" id="mnavicon-mainpage"></span>Main</a>
 </nav>
 
 <!-- ================= HOME ================= -->
@@ -311,7 +317,7 @@
   <div class="stat-row achieve-grid" id="home-achievements"></div>
 
   <div class="fun-fact" id="home-fun-fact" style="display:none;">
-    <div class="icon">🎯</div>
+    <div class="icon" id="home-fun-fact-icon"></div>
     <div class="body" id="home-fun-fact-text"></div>
   </div>
 </section>
@@ -373,6 +379,31 @@ function showPage(name) {
   if (page) page.classList.add('active');
   if (btn) btn.classList.add('active');
   if (mbtn) mbtn.classList.add('active');
+}
+
+const ICON_PATHS = {
+  home: c => `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="2" fill="${c}" stroke="none"/>`,
+  rankings: c => `<rect x="3" y="14" width="5" height="7" rx="0.6"/><rect x="9.5" y="8.5" width="5" height="12.5" rx="0.6"/><rect x="16" y="11.5" width="5" height="9.5" rx="0.6"/>`,
+  matches: c => `<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8 8.5h8M8 12.5h8M8 16.5h5"/>`,
+  players: c => `<circle cx="12" cy="8" r="3.4"/><path d="M5.5 20c0-4 3-6.5 6.5-6.5s6.5 2.5 6.5 6.5"/>`,
+  stats: c => `<rect x="4" y="14" width="3.6" height="7" rx="0.5"/><rect x="10.2" y="9" width="3.6" height="12" rx="0.5"/><rect x="16.4" y="4" width="3.6" height="17" rx="0.5"/>`,
+  mainpage: c => `<path d="M4 11 L12 4 L20 11" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10V20H18V10"/>`,
+  checkout: c => `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.6" fill="${c}" stroke="none"/><path d="M20 4 L13.3 10.7" stroke-linecap="round"/>`,
+  peak: c => `<path d="M4 20L10 12L14 16L20 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 6H20V11" stroke-linecap="round" stroke-linejoin="round"/>`,
+  consistency: c => `<path d="M3 17L8 12L12 14L20 5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3" cy="17" r="1.3" fill="${c}" stroke="none"/><circle cx="8" cy="12" r="1.3" fill="${c}" stroke="none"/><circle cx="12" cy="14" r="1.3" fill="${c}" stroke="none"/><circle cx="20" cy="5" r="1.3" fill="${c}" stroke="none"/>`,
+  bull: c => `<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.2" fill="${c}" stroke="none"/>`,
+  bust: c => `<circle cx="12" cy="12" r="9"/><path d="M8.3 8.3L15.7 15.7M15.7 8.3L8.3 15.7" stroke-linecap="round"/>`,
+  maxscore: c => `<path d="M12 2L14.7 9.1L22 9.6L16.3 14.3L18.2 21.5L12 17.3L5.8 21.5L7.7 14.3L2 9.6L9.3 9.1Z" fill="${c}" stroke="none"/>`,
+  dartvalue: c => `<path d="M4 20L15 9" stroke-linecap="round"/><path d="M15 9L19 5" stroke-linecap="round"/><path d="M4 20L7.6 18.6L5.4 16.4Z" fill="${c}" stroke="none"/><path d="M17.3 3.3L21 7M19 2L22.7 5.7M15.6 4.6L19.3 8.3" stroke-width="1.3"/>`,
+  triples: c => `<path d="M12 3 L21 20 L3 20 Z" stroke-linejoin="round"/>`,
+  doubles: c => `<path d="M12 4 L20 19 L4 19 Z" stroke-linejoin="round"/><path d="M12 9 L17 19 L7 19 Z" stroke-linejoin="round"/>`,
+};
+
+function icon(name, color, size) {
+  color = color || 'currentColor';
+  size = size || 18;
+  const inner = ICON_PATHS[name] ? ICON_PATHS[name](color) : '';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7">${inner}</svg>`;
 }
 
 function wedge(multiplier) {
@@ -544,6 +575,7 @@ function renderHome() {
     let favBase = null, favCount = 0;
     Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
     document.getElementById('home-fun-fact').style.display = 'flex';
+    document.getElementById('home-fun-fact-icon').innerHTML = icon('bull', '#1f5c46', 26);
     document.getElementById('home-fun-fact-text').innerHTML =
       `The league's favorite number so far is <strong>${favBase}</strong> -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every leg.`;
   }
@@ -560,7 +592,7 @@ function computeAchievements(matches, players) {
       }
     });
   });
-  if (highestCheckout) achievements.push({ icon: '🏁', label: 'Highest checkout', value: highestCheckout.value, who: highestCheckout.who, detail: highestCheckout.detail });
+  if (highestCheckout) achievements.push({ icon: icon('checkout', '#a4243b', 26), label: 'Highest checkout', value: highestCheckout.value, who: highestCheckout.who, detail: highestCheckout.detail });
 
   let bestLeg = null;
   matches.forEach(m => {
@@ -570,19 +602,19 @@ function computeAchievements(matches, players) {
       }
     });
   });
-  if (bestLeg) achievements.push({ icon: '🔥', label: 'Best single-leg PPR', value: bestLeg.value.toFixed(1), who: bestLeg.who, detail: bestLeg.detail });
+  if (bestLeg) achievements.push({ icon: icon('peak', '#a4243b', 26), label: 'Best single-leg PPR', value: bestLeg.value.toFixed(1), who: bestLeg.who, detail: bestLeg.detail });
 
   const bySeasonAvg = Object.values(players).filter(p => p.avg_ppr != null).sort((a, b) => b.avg_ppr - a.avg_ppr)[0];
-  if (bySeasonAvg) achievements.push({ icon: '🥇', label: 'Best season average', value: bySeasonAvg.avg_ppr.toFixed(1), who: bySeasonAvg.name, detail: bySeasonAvg.matches + ' leg' + (bySeasonAvg.matches === 1 ? '' : 's') + ' played' });
+  if (bySeasonAvg) achievements.push({ icon: icon('consistency', '#a4243b', 26), label: 'Best season average', value: bySeasonAvg.avg_ppr.toFixed(1), who: bySeasonAvg.name, detail: bySeasonAvg.matches + ' leg' + (bySeasonAvg.matches === 1 ? '' : 's') + ' played' });
 
   const byTriples = Object.values(players).filter(p => p.triples > 0).sort((a, b) => b.triples - a.triples)[0];
-  if (byTriples) achievements.push({ icon: '🔺', label: 'Most triples hit', value: byTriples.triples, who: byTriples.name, detail: 'career total' });
+  if (byTriples) achievements.push({ icon: icon('triples', '#a4243b', 26), label: 'Most triples hit', value: byTriples.triples, who: byTriples.name, detail: 'career total' });
 
   const byDoubles = Object.values(players).filter(p => p.doubles > 0).sort((a, b) => b.doubles - a.doubles)[0];
-  if (byDoubles) achievements.push({ icon: '🟢', label: 'Most doubles hit', value: byDoubles.doubles, who: byDoubles.name, detail: 'career total' });
+  if (byDoubles) achievements.push({ icon: icon('doubles', '#1f5c46', 26), label: 'Most doubles hit', value: byDoubles.doubles, who: byDoubles.name, detail: 'career total' });
 
   const byBulls = Object.values(players).filter(p => p.bulls > 0).sort((a, b) => b.bulls - a.bulls)[0];
-  if (byBulls) achievements.push({ icon: '🔴', label: 'Most bulls hit', value: byBulls.bulls, who: byBulls.name, detail: 'career total' });
+  if (byBulls) achievements.push({ icon: icon('bull', '#a4243b', 26), label: 'Most bulls hit', value: byBulls.bulls, who: byBulls.name, detail: 'career total' });
 
   return achievements;
 }
@@ -786,7 +818,7 @@ function drawPlayerProfile() {
     </div>
 
     <div class="fun-fact">
-      <div class="icon">🎯</div>
+      <div class="icon">${icon('bull', '#1f5c46', 26)}</div>
       <div class="body">
         ${p.favorite_dart
           ? `Signature throw: <strong>${p.favorite_dart}</strong> (hit ${p.favorite_dart_count} time${p.favorite_dart_count === 1 ? '' : 's'}).${p.favorite_dart.replace(/^[TD]/, '') !== String(p.favorite_number) ? ` Favorite number overall: <strong>${p.favorite_number}</strong>.` : ''}`
@@ -840,12 +872,13 @@ function renderStats() {
     });
   });
 
-  function leaderboard(title, sortKey, formatter, sub) {
+  function leaderboard(title, sortKey, formatter, sub, iconName, iconColor) {
     const sorted = [...players].filter(p => p[sortKey] > 0).sort((a, b) => b[sortKey] - a[sortKey]).slice(0, 8);
-    if (!sorted.length) return `<div class="card"><div style="font-weight:700; margin-bottom:8px;">${title}</div><div class="empty-note">No data yet.</div></div>`;
+    const titleHtml = `<span style="display:inline-flex; align-items:center; gap:8px;">${icon(iconName || 'stats', iconColor || '#a4243b', 18)}${title}</span>`;
+    if (!sorted.length) return `<div class="card"><div style="font-weight:700; margin-bottom:8px;">${titleHtml}</div><div class="empty-note">No data yet.</div></div>`;
     return `
       <div class="card">
-        <div style="font-weight:700; margin-bottom:8px;">${title}</div>
+        <div style="font-weight:700; margin-bottom:8px;">${titleHtml}</div>
         <ul class="lb-list">
           ${sorted.map((p, i) => `
             <li class="lb-row">
@@ -870,7 +903,7 @@ function renderStats() {
     <div class="card" id="number-grid-wrap"></div>
 
     <div class="card" style="display:flex; align-items:center; gap:16px; margin-top:8px;">
-      <div class="icon" style="font-size:34px;">🏁</div>
+      <div class="icon">${icon('checkout', '#a4243b', 32)}</div>
       <div>
         <div style="font-weight:700;">Highest checkout</div>
         <div style="font-size:14px; color:var(--board-soft);">
@@ -879,12 +912,12 @@ function renderStats() {
       </div>
     </div>
 
-    ${leaderboard('Most 180s', 's180', p => p.s180)}
-    ${leaderboard('Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`)}
-    ${leaderboard('Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`)}
-    ${leaderboard('Most bulls hit', 'bulls', p => p.bulls)}
-    ${leaderboard('Most busts', 'busts', p => p.busts)}
-    ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1))}
+    ${leaderboard('Most 180s', 's180', p => p.s180, null, 'maxscore', '#b08a3e')}
+    ${leaderboard('Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`, 'triples', '#a4243b')}
+    ${leaderboard('Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`, 'doubles', '#1f5c46')}
+    ${leaderboard('Most bulls hit', 'bulls', p => p.bulls, null, 'bull', '#a4243b')}
+    ${leaderboard('Most busts', 'busts', p => p.busts, null, 'bust', '#211d19')}
+    ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1), null, 'dartvalue', '#a4243b')}
   `;
 
   renderNumberGrid(players);
@@ -1031,7 +1064,17 @@ async function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+function initNavIcons() {
+  const map = { home: 'home', rankings: 'rankings', matches: 'matches', players: 'players', stats: 'stats', mainpage: 'mainpage' };
+  Object.keys(map).forEach(key => {
+    const desktop = document.getElementById('navicon-' + key);
+    if (desktop) desktop.innerHTML = icon(map[key], 'currentColor', 15);
+    const mobile = document.getElementById('mnavicon-' + key);
+    if (mobile) mobile.innerHTML = icon(map[key], 'currentColor', 18);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => { initNavIcons(); init(); });
 </script>
 </body>
 </html>
