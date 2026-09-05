@@ -199,7 +199,7 @@ function hofIcon(name, color, size) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7">${paths[name] || ''}</svg>`;
 }
 
-function renderHallOfFame(players, alltimeRows) {
+function renderHallOfFame(players, alltimeRows, badgeDefs) {
   const grid = document.getElementById('hof-grid');
   const cards = [];
 
@@ -233,11 +233,14 @@ function renderHallOfFame(players, alltimeRows) {
   const BADGE_EMOJI = { PD: '🚔', PL: '⏰', PB: '💨', KS: '⚔️', TK: '💥', TG: '✈️', B6: '🪨', WM: '🎩', SU: '🦸' };
   const notableBadges = ['SU', 'KS', 'WM'];
   notableBadges.forEach(code => {
-    const top = [...players].filter(p => p.badges[code] > 0).sort((a, b) => b.badges[code] - a.badges[code])[0];
-    if (top) cards.push({
-      icon: `<span style="font-size:24px;">${BADGE_EMOJI[code]}</span>`, value: '×' + top.badges[code], label: `Most ${code} badges`,
-      who: top.player, detail: 'career total'
-    });
+    const top = [...players].filter(p => p.badges[code] > 1).sort((a, b) => b.badges[code] - a.badges[code])[0];
+    if (top) {
+      const fullName = (badgeDefs[code] && badgeDefs[code].name) ? badgeDefs[code].name : code;
+      cards.push({
+        icon: `<span style="font-size:24px;">${BADGE_EMOJI[code]}</span>`, value: '×' + top.badges[code], label: `Most ${fullName}`,
+        who: top.player, detail: 'career total'
+      });
+    }
   });
 
   grid.innerHTML = cards.length ? cards.map(c => `
@@ -404,7 +407,7 @@ async function init() {
 
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setText('stat-players', players.length);
-  renderHallOfFame(players, alltimeRows);
+  renderHallOfFame(players, alltimeRows, badgeDefs);
   const totalMatches = alltimeRows.filter(r => r['player A'] && r['player B'] && r['score A'] !== '' && r['score B'] !== '').length;
   setText('stat-matches', totalMatches);
 
