@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Head to Head — The Leagues</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #d32f2f;
+    --navy: #10224d;
+    --navy-light: #2954c8;
+    --gold: #f5c518;
+    --silver: #b0b8c5;
+    --bronze: #cd7f32;
+    --bg: #faf6ee;
+    --card-bg: #ffffff;
+    --border: #e7e0d0;
+    --text: #1a2138;
+    --text-muted: #767b8a;
+    --green: #16a34a;
+    --shadow: 0 4px 18px rgba(16,34,77,0.07);
+    --sb: #ff6b35;
+    --pet: #2e7d32;
+    --darts: #7c4dff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--card-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; background: var(--navy); padding: 2px 8px; border-radius: 4px; }
+  .brand-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .back-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; text-transform: uppercase; text-decoration: none; }
+  .back-btn:hover { background: var(--bg); color: var(--navy); }
+
+  .page { max-width: 1000px; margin: 0 auto; padding: 32px 24px 64px; }
+  .hero { background: linear-gradient(135deg, var(--navy) 0%, #4a1f6e 100%); border-radius: 16px; padding: 40px; color: white; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .hero::before { content: '⚔️'; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-size: 100px; opacity: 0.12; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 40px; font-weight: 900; letter-spacing: 1px; margin-bottom: 6px; }
+  .hero p { font-size: 15px; opacity: 0.85; max-width: 60ch; }
+
+  .picker-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 28px; margin-bottom: 24px; }
+  .picker-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: end; }
+  .picker-col label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  select { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1.5px solid var(--border); font-family: 'Barlow', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); background: var(--card-bg); }
+  select:disabled { color: var(--text-muted); background: var(--bg); cursor: not-allowed; }
+  .vs-label { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 900; color: var(--text-muted); padding-bottom: 12px; }
+
+  .empty { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+  .error-box { background: #fff0f0; border: 1px solid var(--red); border-radius: 10px; padding: 16px 20px; font-size: 13px; margin-bottom: 20px; color: var(--red); }
+
+  .overall-summary { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); padding: 32px; margin-bottom: 28px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; text-align: center; }
+  .os-name { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .os-score { font-family: 'Barlow Condensed', sans-serif; font-size: 56px; font-weight: 900; }
+  .os-score.winner { color: var(--red); }
+  .os-side { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .os-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .os-mid { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .os-mid .total { font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; max-width: 120px; }
+
+  .sport-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .sport-head { padding: 16px 22px; display: flex; align-items: center; gap: 12px; color: white; }
+  .sport-head.sb { background: var(--sb); }
+  .sport-head.pet { background: var(--pet); }
+  .sport-head.darts { background: var(--darts); }
+  .sport-head .icon { font-size: 22px; }
+  .sport-head .name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+  .sport-head .rec { margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; }
+  .sport-body { padding: 20px 22px; }
+
+  .tourn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tourn-card { background: var(--bg); border-radius: 10px; padding: 14px 16px; }
+  .tourn-card .tname { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; color: var(--navy); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .tourn-card .trow { display: flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; }
+
+  .note { font-size: 12.5px; color: var(--text-muted); background: var(--bg); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; line-height: 1.5; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: var(--navy); color: white; font-family: 'Barlow Condensed', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 10px 12px; text-align: left; }
+  thead th.num { text-align: center; }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  tbody td.num { text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 15px; }
+  tbody tr:last-child td { border-bottom: none; }
+  .win-marker { color: var(--green); font-weight: 700; }
+  .loss-marker { color: var(--red); font-weight: 700; }
+  .match-log-wrap { overflow-x: auto; }
+  .match-log-wrap table { min-width: 460px; }
+
+  @media (max-width: 640px) {
+    .picker-row { grid-template-columns: 1fr; }
+    .vs-label { padding: 0; text-align: center; }
+    .overall-summary { grid-template-columns: 1fr; }
+    .os-score { font-size: 40px; }
+    .sport-head .rec { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-sub">The Leagues</span>
+      <span class="brand-title">Head to Head</span>
+    </a>
+    <a class="back-btn" href="index.html">🏠 Main Page</a>
+  </div>
+</header>
+
+<div class="page">
+  <div class="hero">
+    <h1>⚔️ HEAD TO HEAD</h1>
+    <p>Pick two players and see their full history against each other, across every sport they've clashed in.</p>
+  </div>
+
+  <div class="picker-card">
+    <div class="picker-row">
+      <div class="picker-col">
+        <label>Player 1</label>
+        <select id="player1-select"><option value="">Loading players...</option></select>
+      </div>
+      <div class="vs-label">VS</div>
+      <div class="picker-col">
+        <label>Player 2</label>
+        <select id="player2-select" disabled><option value="">Choose player 1 first</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-area"></div>
+  <div id="results"></div>
+</div>
+
+<script>
+const DATA_URLS = {
+  sbAllTime: 'shuffleboard/all_time.json',
+  sbTeams: 'shuffleboard/teams.json',
+  sbReplacements: 'shuffleboard/replacements.json',
+  petFixtures: 'petanque/fixtures.json',
+  dartsMatches: 'darts/matches.json',
+  dartsAliases: 'darts/player_aliases.json',
+};
+
+async function fetchJSON(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function tournTag(t) {
+  if (t === 'DEATHMATCH') return '💀 Deathmatch';
+  if (t === 'MARCH MADNESS') return '🏀 March Madness';
+  if (t === 'LEAGUE 2026') return '🥏 League 2026';
+  return t;
+}
+
+let STATE = { displayName: {}, opponentsOf: {}, encounters: { shuffleboard: {}, petanque: {}, darts: {} } };
+
+function addDisplay(store, name) {
+  const k = name.toLowerCase().trim();
+  if (!store[k]) store[k] = name.trim();
+  return k;
+}
+
+function addOpponentLink(opponentsOf, kA, kB) {
+  if (!opponentsOf[kA]) opponentsOf[kA] = new Set();
+  if (!opponentsOf[kB]) opponentsOf[kB] = new Set();
+  opponentsOf[kA].add(kB);
+  opponentsOf[kB].add(kA);
+}
+
+// ---------- Shuffleboard ----------
+function buildShuffleboard(alltimeRows, teamsRows, replacementsRows, displayName, opponentsOf, encounters) {
+  if (!alltimeRows || !teamsRows || !replacementsRows) return;
+
+  const teamLookup = {};
+  teamsRows.forEach(r => { teamLookup[`${r.tournament}|${r.team}`] = [r.member_1, r.member_2].filter(Boolean); });
+
+  const repLookup = {};
+  replacementsRows.forEach(r => {
+    if (!r.player) return;
+    repLookup[`${r.tournament}|${r.month}|${r.player.toLowerCase().trim()}`] = r.replacement;
+  });
+  function resolveName(name, tournament, month) {
+    return repLookup[`${tournament}|${month}|${name.toLowerCase().trim()}`] || name;
+  }
+
+  const teamCodePattern = /^team_\d+$/i;
+
+  alltimeRows.forEach(row => {
+    const pAname = (row['player A'] || '').trim();
+    const pBname = (row['player B'] || '').trim();
+    const sA = parseFloat(row['score A']);
+    const sB = parseFloat(row['score B']);
+    const tourn = (row['tournament'] || '').trim();
+    const month = (row['month'] || '').trim();
+    const round = (row['round'] || '').trim();
+    if (!pAname || !pBname || isNaN(sA) || isNaN(sB)) return;
+
+    const keyA = `${tourn}|${pAname}`;
+    const keyB = `${tourn}|${pBname}`;
+    const membersA = teamLookup[keyA] ? teamLookup[keyA] : [resolveName(pAname, tourn, month)];
+    const membersB = teamLookup[keyB] ? teamLookup[keyB] : [resolveName(pBname, tourn, month)];
+
+    membersA.forEach(nameA => {
+      if (teamCodePattern.test(nameA.trim())) return;
+      const kA = addDisplay(displayName, nameA);
+      membersB.forEach(nameB => {
+        if (teamCodePattern.test(nameB.trim())) return;
+        const kB = addDisplay(displayName, nameB);
+        if (kA === kB) return;
+
+        addOpponentLink(opponentsOf, kA, kB);
+
+        const pairKey = [kA, kB].sort().join('|');
+        if (!encounters[pairKey]) encounters[pairKey] = [];
+        encounters[pairKey].push({ tournament: tourn, month, round, keyA: kA, keyB: kB, scoreA: sA, scoreB: sB });
+      });
+    });
+  });
+}
+
+// ---------- Petanque ----------
+function buildPetanque(fixtureRows, displayName, opponentsOf, encounters) {
+  if (!fixtureRows) return;
+
+  fixtureRows.forEach(row => {
+    const membersA = [row.TAP1, row.TAP2, row.TAP3].map(n => (n || '').trim()).filter(Boolean);
+    const membersB = [row.TBP1, row.TBP2, row.TBP3].map(n => (n || '').trim()).filter(Boolean);
+    const sA = parseFloat(row['Score A']);
+    const sB = parseFloat(row['Score B']);
+    if (!membersA.length || !membersB.length || isNaN(sA) || isNaN(sB)) return;
+
+    membersA.forEach(nameA => {
+      const kA = addDisplay(displayName, nameA);
+      membersB.forEach(nameB => {
+        const kB = addDisplay(displayName, nameB);
+        if (kA === kB) return;
+
+        addOpponentLink(opponentsOf, kA, kB);
+
+        const pairKey = [kA, kB].sort().join('|');
+        if (!encounters[pairKey]) encounters[pairKey] = [];
+        encounters[pairKey].push({ month: row.Month || '', keyA: kA, keyB: kB, scoreA: sA, scoreB: sB });
+      });
+    });
+  });
+}
+
+// ---------- Darts ----------
+function buildDarts(matches, aliases, displayName, opponentsOf, encounters) {
+  if (!matches) return;
+  aliases = aliases || {};
+  function dn(raw) {
+    return aliases[(raw || '').toUpperCase()] || raw;
+  }
+
+  matches.forEach(m => {
+    const players = (m.players || []).map(dn);
+    if (players.length < 2) return;
+    const winner = dn(m.winner);
+
+    for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+        const nameA = players[i], nameB = players[j];
+        const kA = addDisplay(displayName, nameA);
+        const kB = addDisplay(displayName, nameB);
+        if (kA === kB) continue;
+
+        addOpponentLink(opponentsOf, kA, kB);
+
+        let result = 'undecided';
+        if (winner === nameA) result = 'A';
+        else if (winner === nameB) result = 'B';
+
+        const pairKey = [kA, kB].sort().join('|');
+        if (!encounters[pairKey]) encounters[pairKey] = [];
+        encounters[pairKey].push({ date: m.date, keyA: kA, keyB: kB, result });
+      }
+    }
+  });
+}
+
+function populatePlayer1() {
+  const names = Object.keys(STATE.displayName).sort((a, b) => STATE.displayName[a].localeCompare(STATE.displayName[b]));
+  const sel = document.getElementById('player1-select');
+  sel.innerHTML = '<option value="">Choose a player...</option>' + names.map(k => `<option value="${k}">${STATE.displayName[k]}</option>`).join('');
+}
+
+function onPlayer1Change() {
+  const k1 = document.getElementById('player1-select').value;
+  const sel2 = document.getElementById('player2-select');
+  document.getElementById('results').innerHTML = '';
+
+  if (!k1) {
+    sel2.disabled = true;
+    sel2.innerHTML = '<option value="">Choose player 1 first</option>';
+    return;
+  }
+
+  const opponents = [...(STATE.opponentsOf[k1] || [])].sort((a, b) => STATE.displayName[a].localeCompare(STATE.displayName[b]));
+  if (!opponents.length) {
+    sel2.disabled = true;
+    sel2.innerHTML = '<option value="">No recorded opponents</option>';
+    return;
+  }
+  sel2.disabled = false;
+  sel2.innerHTML = '<option value="">Choose a player...</option>' + opponents.map(k => `<option value="${k}">${STATE.displayName[k]}</option>`).join('');
+}
+
+function onPlayer2Change() {
+  const k1 = document.getElementById('player1-select').value;
+  const k2 = document.getElementById('player2-select').value;
+  if (!k1 || !k2) { document.getElementById('results').innerHTML = ''; return; }
+  renderResults(k1, k2);
+}
+
+function shuffleboardSection(k1, k2, name1, name2) {
+  const pairKey = [k1, k2].sort().join('|');
+  const matches = (STATE.encounters.shuffleboard[pairKey] || []).slice().sort((a, b) => (a.month || '').localeCompare(b.month || ''));
+  if (!matches.length) return '';
+
+  let wins1 = 0, wins2 = 0, ties = 0;
+  const byTournament = {};
+
+  matches.forEach(m => {
+    const p1IsA = m.keyA === k1;
+    const s1 = p1IsA ? m.scoreA : m.scoreB;
+    const s2 = p1IsA ? m.scoreB : m.scoreA;
+    let result;
+    if (s1 > s2) { wins1++; result = 1; }
+    else if (s2 > s1) { wins2++; result = 2; }
+    else { ties++; result = 0; }
+
+    if (!byTournament[m.tournament]) byTournament[m.tournament] = { w1: 0, w2: 0, t: 0 };
+    if (result === 1) byTournament[m.tournament].w1++;
+    else if (result === 2) byTournament[m.tournament].w2++;
+    else byTournament[m.tournament].t++;
+
+    m._s1 = s1; m._s2 = s2; m._result = result;
+  });
+
+  const tournCards = Object.entries(byTournament).map(([t, rec]) => `
+    <div class="tourn-card">
+      <div class="tname">${tournTag(t)}</div>
+      <div class="trow"><span>${name1}</span><strong>${rec.w1}</strong></div>
+      <div class="trow"><span>${name2}</span><strong>${rec.w2}</strong></div>
+      ${rec.t ? `<div class="trow"><span>Ties</span><strong>${rec.t}</strong></div>` : ''}
+    </div>
+  `).join('');
+
+  const logRows = matches.map(m => `
+    <tr>
+      <td>${tournTag(m.tournament)}</td>
+      <td>${m.month || '—'}${m.round ? ' · ' + m.round : ''}</td>
+      <td class="num ${m._result === 1 ? 'win-marker' : m._result === 2 ? 'loss-marker' : ''}">${m._s1}</td>
+      <td class="num" style="color:var(--text-muted);font-size:11px;">–</td>
+      <td class="num ${m._result === 2 ? 'win-marker' : m._result === 1 ? 'loss-marker' : ''}">${m._s2}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="sport-section">
+      <div class="sport-head sb"><span class="icon">🥏</span><span class="name">Shuffleboard</span><span class="rec">${wins1}-${wins2}${ties ? '-' + ties : ''}</span></div>
+      <div class="sport-body">
+        <div class="tourn-grid">${tournCards}</div>
+        <div class="match-log-wrap">
+          <table>
+            <thead><tr><th>Tournament</th><th>When</th><th class="num">${name1}</th><th></th><th class="num">${name2}</th></tr></thead>
+            <tbody>${logRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function petanqueSection(k1, k2, name1, name2) {
+  const pairKey = [k1, k2].sort().join('|');
+  const matches = (STATE.encounters.petanque[pairKey] || []).slice().sort((a, b) => (a.month || '').localeCompare(b.month || ''));
+  if (!matches.length) return '';
+
+  let wins1 = 0, wins2 = 0, ties = 0;
+  matches.forEach(m => {
+    const p1IsA = m.keyA === k1;
+    const s1 = p1IsA ? m.scoreA : m.scoreB;
+    const s2 = p1IsA ? m.scoreB : m.scoreA;
+    let result;
+    if (s1 > s2) { wins1++; result = 1; }
+    else if (s2 > s1) { wins2++; result = 2; }
+    else { ties++; result = 0; }
+    m._s1 = s1; m._s2 = s2; m._result = result;
+  });
+
+  const logRows = matches.map(m => `
+    <tr>
+      <td>${m.month || '—'}</td>
+      <td class="num ${m._result === 1 ? 'win-marker' : m._result === 2 ? 'loss-marker' : ''}">${m._s1}</td>
+      <td class="num" style="color:var(--text-muted);font-size:11px;">–</td>
+      <td class="num ${m._result === 2 ? 'win-marker' : m._result === 1 ? 'loss-marker' : ''}">${m._s2}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div class="sport-section">
+      <div class="sport-head pet"><span class="icon">🎯</span><span class="name">Pétanque</span><span class="rec">${wins1}-${wins2}${ties ? '-' + ties : ''}</span></div>
+      <div class="sport-body">
+        <div class="match-log-wrap">
+          <table>
+            <thead><tr><th>Session</th><th class="num">${name1}</th><th></th><th class="num">${name2}</th></tr></thead>
+            <tbody>${logRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function dartsSection(k1, k2, name1, name2) {
+  const pairKey = [k1, k2].sort().join('|');
+  const matches = (STATE.encounters.darts[pairKey] || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  if (!matches.length) return '';
+
+  let wins1 = 0, wins2 = 0, undecided = 0;
+  matches.forEach(m => {
+    const p1IsA = m.keyA === k1;
+    if (m.result === 'undecided') { undecided++; return; }
+    const p1Won = (m.result === 'A' && p1IsA) || (m.result === 'B' && !p1IsA);
+    if (p1Won) wins1++; else wins2++;
+  });
+
+  const logRows = matches.map(m => {
+    const p1IsA = m.keyA === k1;
+    let label;
+    if (m.result === 'undecided') label = '<span style="color:var(--text-muted);">Another player won this leg</span>';
+    else {
+      const p1Won = (m.result === 'A' && p1IsA) || (m.result === 'B' && !p1IsA);
+      label = p1Won ? `<span class="win-marker">${name1} won</span>` : `<span class="loss-marker">${name2} won</span>`;
+    }
+    return `<tr><td>${m.date || '—'}</td><td>${label}</td></tr>`;
+  }).join('');
+
+  return `
+    <div class="sport-section">
+      <div class="sport-head darts"><span class="icon">🎯</span><span class="name">Darts</span><span class="rec">${wins1}-${wins2}</span></div>
+      <div class="sport-body">
+        ${undecided ? `<div class="note">${undecided} shared leg${undecided === 1 ? '' : 's'} had a third player win, so ${undecided === 1 ? "it isn't" : "they aren't"} counted toward either player's record below.</div>` : ''}
+        <div class="match-log-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Result</th></tr></thead>
+            <tbody>${logRows}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderResults(k1, k2) {
+  const name1 = STATE.displayName[k1], name2 = STATE.displayName[k2];
+
+  const sbHtml = shuffleboardSection(k1, k2, name1, name2);
+  const petHtml = petanqueSection(k1, k2, name1, name2);
+  const dartsHtml = dartsSection(k1, k2, name1, name2);
+
+  // Overall combined W-L across every sport with a decisive result
+  let totalWins1 = 0, totalWins2 = 0, totalEncounters = 0;
+  ['shuffleboard', 'petanque'].forEach(sport => {
+    const pairKey = [k1, k2].sort().join('|');
+    (STATE.encounters[sport][pairKey] || []).forEach(m => {
+      const p1IsA = m.keyA === k1;
+      const s1 = p1IsA ? m.scoreA : m.scoreB;
+      const s2 = p1IsA ? m.scoreB : m.scoreA;
+      totalEncounters++;
+      if (s1 > s2) totalWins1++; else if (s2 > s1) totalWins2++;
+    });
+  });
+  const pairKeyDarts = [k1, k2].sort().join('|');
+  (STATE.encounters.darts[pairKeyDarts] || []).forEach(m => {
+    if (m.result === 'undecided') return;
+    totalEncounters++;
+    const p1IsA = m.keyA === k1;
+    const p1Won = (m.result === 'A' && p1IsA) || (m.result === 'B' && !p1IsA);
+    if (p1Won) totalWins1++; else totalWins2++;
+  });
+
+  const summary = `
+    <div class="overall-summary">
+      <div class="os-side">
+        <div class="os-name">${name1}</div>
+        <div class="os-score ${totalWins1 > totalWins2 ? 'winner' : ''}">${totalWins1}</div>
+        <div class="os-label">Wins</div>
+      </div>
+      <div class="os-mid">
+        <div class="total">${totalEncounters} encounter${totalEncounters === 1 ? '' : 's'} across all sports</div>
+      </div>
+      <div class="os-side">
+        <div class="os-name">${name2}</div>
+        <div class="os-score ${totalWins2 > totalWins1 ? 'winner' : ''}">${totalWins2}</div>
+        <div class="os-label">Wins</div>
+      </div>
+    </div>
+  `;
+
+  const sections = [sbHtml, petHtml, dartsHtml].filter(Boolean).join('');
+
+  document.getElementById('results').innerHTML = summary + (sections || '<div class="empty">No recorded matches between these two yet.</div>');
+}
+
+async function init() {
+  const [sbAllTime, sbTeams, sbReplacements, petFixtures, dartsMatches, dartsAliases] = await Promise.all([
+    fetchJSON(DATA_URLS.sbAllTime), fetchJSON(DATA_URLS.sbTeams), fetchJSON(DATA_URLS.sbReplacements),
+    fetchJSON(DATA_URLS.petFixtures), fetchJSON(DATA_URLS.dartsMatches), fetchJSON(DATA_URLS.dartsAliases),
+  ]);
+
+  if (!sbAllTime && !petFixtures && !dartsMatches) {
+    document.getElementById('error-area').innerHTML =
+      '<div class="error-box">⚠️ Could not load match data from any sport. If you just updated scores, run the "Sync Sheets to JSON" workflow first, then refresh.</div>';
+    document.getElementById('player1-select').innerHTML = '<option value="">Data unavailable</option>';
+    return;
+  }
+
+  buildShuffleboard(sbAllTime, sbTeams, sbReplacements, STATE.displayName, STATE.opponentsOf, STATE.encounters.shuffleboard);
+  buildPetanque(petFixtures, STATE.displayName, STATE.opponentsOf, STATE.encounters.petanque);
+  buildDarts(dartsMatches, dartsAliases, STATE.displayName, STATE.opponentsOf, STATE.encounters.darts);
+
+  populatePlayer1();
+  document.getElementById('player1-select').addEventListener('change', onPlayer1Change);
+  document.getElementById('player2-select').addEventListener('change', onPlayer2Change);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
