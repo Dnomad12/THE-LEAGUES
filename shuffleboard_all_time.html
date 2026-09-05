@@ -113,16 +113,16 @@
 
   <div id="error-area"></div>
   <div id="legend-area"></div>
-  <div id="table-wrap"><div class="loading"><div class="spinner">🥏</div><br><div id="load-status">Connecting to Google Sheets...</div></div></div>
+  <div id="table-wrap"><div class="loading"><div class="spinner">🥏</div><br><div id="load-status">Loading match data...</div></div></div>
   <div class="bottom-legend" id="bottom-legend"></div>
 </div>
 
 <script>
 const URLS = {
-  alltime:      'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=1865190557&single=true&output=csv',
-  teams:        'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=804843551&single=true&output=csv',
-  replacements: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=762367159&single=true&output=csv',
-  badges:       'https://docs.google.com/spreadsheets/d/e/2PACX-1vTbTUPmYdu5y5fSoXrduhbSs9X9tRuTtDoSS_1rsXDSedFCyLpm_xY0FTEOrR-jvWvzBTPFqEwJ3f4S/pub?gid=1226801861&single=true&output=csv',
+  alltime:      'shuffleboard/all_time.json',
+  teams:        'shuffleboard/teams.json',
+  replacements: 'shuffleboard/replacements.json',
+  badges:       'shuffleboard/badges.json',
 };
 
 const PROXY = 'https://corsproxy.io/?';
@@ -152,23 +152,13 @@ function splitCSVLine(line) {
 }
 
 async function fetchCSV(url) {
-  const proxies = [
-    url,
-    'https://corsproxy.io/?' + encodeURIComponent(url),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-  ];
-  for (const u of proxies) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(u, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text && text.length > 10) return parseCSV(text);
-    } catch(e) { }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
   }
-  return null;
 }
 
 const initials = n => n.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2);
@@ -205,8 +195,8 @@ async function init() {
 
   if (!alltimeRows || !teamsRows || !replacementsRows) {
     document.getElementById('error-area').innerHTML =
-      '<div class="error-box">⚠️ Could not load data from Google Sheets. Check your internet connection or try refreshing.</div>';
-    document.getElementById('table-wrap').innerHTML = '<div class="empty">No data available — Google Sheets could not be reached.</div>';
+      '<div class="error-box">⚠️ Could not load match data. If you just updated scores, run the "Sync Sheets to JSON" workflow first, then refresh.</div>';
+    document.getElementById('table-wrap').innerHTML = '<div class="empty">No data available.</div>';
     document.getElementById('bottom-legend').innerHTML = '';
     return;
   }

@@ -300,9 +300,8 @@
 
 <script>
 const URLS = {
-  fixtures: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRrlm9n0oNlUxj19V9cD6W2YiV6o-NmVrmgt7MmfnR327dwrisPBEp0r1Ptn5Ua_CbqpgSYVsaEcf40/pub?gid=1612705044&single=true&output=csv',
+  fixtures: 'petanque/fixtures.json',
 };
-const PROXY = 'https://corsproxy.io/?';
 
 function parseCSV(text) {
   const lines = text.trim().split('\n').filter(l => l.trim());
@@ -325,19 +324,13 @@ function splitLine(line) {
   cols.push(cur); return cols;
 }
 async function fetchCSV(url) {
-  const proxies = [url, PROXY + encodeURIComponent(url), 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url)];
-  for (const u of proxies) {
-    try {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch(u, { signal: ctrl.signal });
-      clearTimeout(t);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text && text.length > 10) return parseCSV(text);
-    } catch(e) {}
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
   }
-  return null;
 }
 
 const initials = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().substring(0,2);
@@ -522,7 +515,7 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// Auto-refresh every 5 minutes to pick up new scores from Google Sheets
+// Auto-refresh every 5 minutes to pick up newly-synced scores
 setInterval(() => location.reload(), 5 * 60 * 1000);
 </script>
 </body>
