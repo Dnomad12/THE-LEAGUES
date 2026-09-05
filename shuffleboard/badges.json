@@ -1,0 +1,62 @@
+[
+  {
+    "TYPE": "PENALTY",
+    "CODE": "PD",
+    "NAME": "fashion_police",
+    "DESCRIPTION": "failure to wear the dress code for the session"
+  },
+  {
+    "TYPE": "PENALTY",
+    "CODE": "PL",
+    "NAME": "slow_starter",
+    "DESCRIPTION": "late arrival to the table for the scheduled round"
+  },
+  {
+    "TYPE": "PENALTY",
+    "CODE": "PS",
+    "NAME": "substitution",
+    "DESCRIPTION": "missed the session and had someone play for them"
+  },
+  {
+    "TYPE": "PENALTY",
+    "CODE": "PB",
+    "NAME": "sand_blower",
+    "DESCRIPTION": "moving the sand on the table"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "KS",
+    "NAME": "king_slayer",
+    "DESCRIPTION": "won a game against the current number 1"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "TK",
+    "NAME": "triple_kill",
+    "DESCRIPTION": "shot 3 stones out with one stone"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "TG",
+    "NAME": "top_gun",
+    "DESCRIPTION": "won TOP GUN badge"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "B6",
+    "NAME": "cliff_hanger",
+    "DESCRIPTION": "scored a 6-poiter hanging puck"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "WM",
+    "NAME": "wardrobe_master",
+    "DESCRIPTION": "overachieved the dress code"
+  },
+  {
+    "TYPE": "BADGE",
+    "CODE": "SU",
+    "NAME": "sub_savior",
+    "DESCRIPTION": "stepped in to save the day"
+  }
+]

@@ -1,0 +1,128 @@
+[
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_1",
+    "member_1": "Julia Budziak",
+    "member_2": "Jose Figueiredo",
+    "Stamp": "Giraffe"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_2",
+    "member_1": "Patrick Rahn",
+    "member_2": "Svenja Vogts",
+    "Stamp": "Tyrannosaurus"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_3",
+    "member_1": "Daniel Uric",
+    "member_2": "Marc Dammann",
+    "Stamp": "Panda"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_4",
+    "member_1": "Vanessa Nieto",
+    "member_2": "Pierre Sonier",
+    "Stamp": "Hippopotamus"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_5",
+    "member_1": "Bastian Zahn",
+    "member_2": "Chinmayi Vijayendra",
+    "Stamp": "Flamingo"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_6",
+    "member_1": "Nils Gasde",
+    "member_2": "Marjan Ghobadian",
+    "Stamp": "Crocodile"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_7",
+    "member_1": "John Nnadozie",
+    "member_2": "Sebastian Heise",
+    "Stamp": "Penguin"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_8",
+    "member_1": "Kristina Attermeyer",
+    "member_2": "Michaela Bukovac",
+    "Stamp": "Triceratops"
+  },
+  {
+    "tournament": "DEATHMATCH",
+    "team": "TEAM_9",
+    "member_1": "Iavosoa Randrianarivelo",
+    "member_2": "Quentin Coulon",
+    "Stamp": "Elephant"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_1",
+    "member_1": "John Nnadozie",
+    "member_2": "Marjan Ghobadian",
+    "Stamp": "Panda"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_2",
+    "member_1": "Noémie Lalanne",
+    "member_2": "Jose Figueiredo",
+    "Stamp": "Hippopotamus"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_3",
+    "member_1": "Sirma Karageorgieva",
+    "member_2": "Sebastian Heise",
+    "Stamp": "Rhinocerous"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_4",
+    "member_1": "Jan-Eric Pietsch",
+    "member_2": "Svenja Vogts",
+    "Stamp": "Tiger"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_5",
+    "member_1": "Ulf Wotsch",
+    "member_2": "Matteo Rodogna",
+    "Stamp": "Eagle"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_6",
+    "member_1": "Julia Budziak",
+    "member_2": "Daniel Uric",
+    "Stamp": "Wolf"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_7",
+    "member_1": "Kristina Attermeyer",
+    "member_2": "Marc Dammann",
+    "Stamp": "Bear"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_8",
+    "member_1": "Iavosoa Randrianarivelo",
+    "member_2": "Chinmayi Vijayendra",
+    "Stamp": "Gorilla"
+  },
+  {
+    "tournament": "MARCH MADNESS",
+    "team": "TEAM_9",
+    "member_1": "Dominik Hantel",
+    "member_2": "Quentin Coulon",
+    "Stamp": "Elephant"
+  }
+]
