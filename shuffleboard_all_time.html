@@ -82,6 +82,20 @@
   .legend-name{font-weight:700;font-size:14px;color:var(--navy);margin-bottom:1px;}
   .legend-name.penalty-name{color:var(--red);}
   .legend-desc{font-size:12px;color:var(--text-muted);line-height:1.4;}
+
+  .hof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+  .hof-card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;display:flex;gap:14px;align-items:flex-start;}
+  .hof-card .icon{flex-shrink:0;margin-top:2px;}
+  .hof-card .value{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:24px;color:var(--red);}
+  .hof-card .label{font-size:11.5px;color:var(--text-muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.4px;}
+  .hof-card .who{font-weight:700;margin-top:5px;font-size:14px;color:var(--navy);}
+  .hof-card .detail{font-size:12px;color:var(--text-muted);}
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .h2h-cta{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:20px 24px;margin-bottom:28px;flex-wrap:wrap;}
+  .h2h-cta-text{font-size:14px;color:var(--text-muted);}
+  .h2h-cta-text strong{color:var(--navy);}
+  .h2h-cta-btn{background:var(--navy);color:white;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-size:13px;padding:10px 22px;border-radius:8px;text-decoration:none;white-space:nowrap;}
+  .h2h-cta-btn:hover{background:var(--navy-light);}
   @media(max-width:768px){.page{padding:16px;}.hero{padding:24px 20px;}.hero::before{display:none;}.hero h1{font-size:30px;}table{font-size:12px;}thead th,tbody td{padding:8px 10px;}.avatar{width:28px;height:28px;font-size:11px;}.player-name{font-size:13px;}}
 </style>
 </head>
@@ -92,7 +106,10 @@
       <span style="font-size:26px">🥏</span>
       <div><div class="brand-sub">Shuffleboard League</div><div class="brand-title">All-Time Rankings</div></div>
     </a>
-    <a class="back-btn" href="index.html">🏠 Main Page</a>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a class="back-btn" href="shuffleboard_head_to_head.html">⚔️ Head to Head</a>
+      <a class="back-btn" href="index.html">🏠 Main Page</a>
+    </div>
   </div>
 </header>
 
@@ -112,6 +129,15 @@
   </div>
 
   <div id="error-area"></div>
+
+  <div class="section-title">🏆 Hall of Fame</div>
+  <div class="hof-grid" id="hof-grid"></div>
+
+  <div class="h2h-cta">
+    <div class="h2h-cta-text">Curious how two players stack up against each other? <strong>Compare any two players' full history.</strong></div>
+    <a class="h2h-cta-btn" href="shuffleboard_head_to_head.html">⚔️ Head to Head →</a>
+  </div>
+
   <div id="legend-area"></div>
   <div id="table-wrap"><div class="loading"><div class="spinner">🥏</div><br><div id="load-status">Loading match data...</div></div></div>
   <div class="bottom-legend" id="bottom-legend"></div>
@@ -174,6 +200,70 @@ function tournTag(t) {
 function parseAB(val) {
   const v = (val || '').trim().toUpperCase();
   return { forA: v.includes('A'), forB: v.includes('B') };
+}
+
+function hofIcon(name, color, size) {
+  size = size || 26;
+  const paths = {
+    winrate: `<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9" stroke-linecap="round" stroke-linejoin="round"/>`,
+    margin: `<rect x="3" y="6" width="13" height="4" rx="1"/><rect x="3" y="14" width="7" height="4" rx="1"/><path d="M20 7V17" stroke-linecap="round"/><path d="M17.5 9.5L20 7L22.5 9.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 14.5L20 17L22.5 14.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    dedication: `<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10H21"/><path d="M8 3V7" stroke-linecap="round"/><path d="M16 3V7" stroke-linecap="round"/>`,
+  };
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7">${paths[name] || ''}</svg>`;
+}
+
+function renderHallOfFame(players, alltimeRows) {
+  const grid = document.getElementById('hof-grid');
+  const cards = [];
+
+  const eligible = players.filter(p => p.matches_played >= 10);
+  const byWinRate = [...eligible].sort((a, b) => b.win_pct - a.win_pct)[0];
+  if (byWinRate) cards.push({
+    icon: hofIcon('winrate', '#16a34a'), value: byWinRate.win_pct + '%', label: 'Best win rate (10+ matches)',
+    who: byWinRate.player, detail: `${byWinRate.wins}-${byWinRate.losses}${byWinRate.ties ? '-' + byWinRate.ties : ''} record`
+  });
+
+  let biggestMargin = null;
+  alltimeRows.forEach(row => {
+    const sA = parseFloat(row['score A']), sB = parseFloat(row['score B']);
+    if (isNaN(sA) || isNaN(sB)) return;
+    const margin = Math.abs(sA - sB);
+    if (!biggestMargin || margin > biggestMargin.margin) {
+      biggestMargin = { margin, winner: sA > sB ? row['player A'] : row['player B'], loser: sA > sB ? row['player B'] : row['player A'], scoreA: sA, scoreB: sB, tournament: row['tournament'] };
+    }
+  });
+  if (biggestMargin) cards.push({
+    icon: hofIcon('margin', '#d32f2f'), value: '+' + biggestMargin.margin, label: 'Biggest win margin',
+    who: biggestMargin.winner, detail: `beat ${biggestMargin.loser} ${Math.max(biggestMargin.scoreA, biggestMargin.scoreB)}-${Math.min(biggestMargin.scoreA, biggestMargin.scoreB)}`
+  });
+
+  const byMatches = [...players].sort((a, b) => b.matches_played - a.matches_played)[0];
+  if (byMatches) cards.push({
+    icon: hofIcon('dedication', '#002d80'), value: byMatches.matches_played, label: 'Most matches played',
+    who: byMatches.player, detail: 'across all tournaments'
+  });
+
+  const BADGE_EMOJI = { PD: '🚔', PL: '⏰', PB: '💨', KS: '⚔️', TK: '💥', TG: '✈️', B6: '🪨', WM: '🎩', SU: '🦸' };
+  const notableBadges = ['SU', 'KS', 'WM'];
+  notableBadges.forEach(code => {
+    const top = [...players].filter(p => p.badges[code] > 0).sort((a, b) => b.badges[code] - a.badges[code])[0];
+    if (top) cards.push({
+      icon: `<span style="font-size:24px;">${BADGE_EMOJI[code]}</span>`, value: '×' + top.badges[code], label: `Most ${code} badges`,
+      who: top.player, detail: 'career total'
+    });
+  });
+
+  grid.innerHTML = cards.length ? cards.map(c => `
+    <div class="hof-card">
+      <div class="icon">${c.icon}</div>
+      <div>
+        <div class="value">${c.value}</div>
+        <div class="label">${c.label}</div>
+        <div class="who">${c.who}</div>
+        <div class="detail">${c.detail}</div>
+      </div>
+    </div>
+  `).join('') : '<div class="empty">Not enough matches yet to crown any records.</div>';
 }
 
 async function init() {
@@ -327,6 +417,7 @@ async function init() {
 
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setText('stat-players', players.length);
+  renderHallOfFame(players, alltimeRows);
   const totalMatches = alltimeRows.filter(r => r['player A'] && r['player B'] && r['score A'] !== '' && r['score B'] !== '').length;
   setText('stat-matches', totalMatches);
 

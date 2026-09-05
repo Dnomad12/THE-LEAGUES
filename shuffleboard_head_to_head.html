@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shuffleboard League — Head to Head</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#d32f2f;--navy:#002d80;--navy-light:#1a4db5;--gold:#f5c518;--silver:#b0b8c5;--bronze:#cd7f32;--bg:#f4f6fa;--surface:#fff;--border:#e0e4ef;--text:#1a1f2e;--text-muted:#6b7280;--green:#16a34a;--shadow:0 2px 12px rgba(0,45,128,.1);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .header{background:var(--surface);box-shadow:var(--shadow);position:sticky;top:0;z-index:100;border-bottom:3px solid var(--red);}
+  .header-inner{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:64px;flex-wrap:wrap;gap:8px;}
+  .brand{display:flex;align-items:center;gap:14px;text-decoration:none;}
+  .brand-sub{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--red);text-transform:uppercase;}
+  .brand-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--navy);letter-spacing:1px;}
+  .back-btn{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;color:var(--text-muted);padding:8px 16px;border-radius:6px;text-transform:uppercase;background:none;border:none;cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap;}
+  .back-btn:hover{background:var(--border);color:var(--navy);}
+  .page{max-width:1000px;margin:0 auto;padding:32px 24px;}
+  .hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 50%,#7b1fa2 100%);border-radius:16px;padding:40px;color:white;margin-bottom:28px;position:relative;overflow:hidden;}
+  .hero::before{content:'⚔️';position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:100px;opacity:0.12;}
+  .hero h1{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;letter-spacing:1px;margin-bottom:6px;}
+  .hero p{font-size:15px;opacity:0.85;max-width:60ch;}
+
+  .picker-card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:28px;margin-bottom:24px;}
+  .picker-row{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:end;}
+  .picker-col label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+  select{width:100%;padding:12px 14px;border-radius:8px;border:1.5px solid var(--border);font-family:'Barlow',sans-serif;font-size:15px;font-weight:600;color:var(--text);background:var(--surface);}
+  select:disabled{color:var(--text-muted);background:var(--bg);cursor:not-allowed;}
+  .vs-label{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--text-muted);padding-bottom:12px;}
+
+  .loading{text-align:center;padding:60px;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:1px;}
+  .spinner{font-size:36px;animation:spin 1s linear infinite;display:inline-block;margin-bottom:16px;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .error-box{background:#fff0f0;border:1px solid var(--red);border-radius:10px;padding:16px 20px;font-size:13px;margin-bottom:20px;color:var(--red);}
+  .empty{text-align:center;padding:40px;color:var(--text-muted);font-style:italic;}
+
+  .h2h-summary{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:32px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;text-align:center;}
+  .h2h-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--navy);}
+  .h2h-score{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;}
+  .h2h-score.winner{color:var(--red);}
+  .h2h-side{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .h2h-record{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+  .h2h-mid{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .h2h-mid .total{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;}
+
+  .section-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .tourn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px;}
+  .tourn-card{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;}
+  .tourn-card .tname{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;}
+  .tourn-card .trow{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;}
+
+  .match-log{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);overflow-x:auto;}
+  .match-log table{min-width:480px;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{background:var(--navy);color:white;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:12px 14px;text-align:left;}
+  thead th.num{text-align:center;}
+  tbody td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13.5px;}
+  tbody td.num{text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;}
+  tbody tr:last-child td{border-bottom:none;}
+  .win-marker{color:var(--green);font-weight:700;}
+  .loss-marker{color:var(--red);font-weight:700;}
+
+  @media(max-width:640px){.picker-row{grid-template-columns:1fr;}.vs-label{padding:0;text-align:center;}.h2h-summary{grid-template-columns:1fr;}.h2h-score{font-size:40px;}.header-inner{justify-content:center;text-align:center;}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <span style="font-size:26px">🥏</span>
+      <div><div class="brand-sub">Shuffleboard League</div><div class="brand-title">Head to Head</div></div>
+    </a>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a class="back-btn" href="shuffleboard_all_time.html">🏆 All-Time</a>
+      <a class="back-btn" href="shuffleboard_league2026.html">🥏 League 2026</a>
+      <a class="back-btn" href="index.html">🏠 Main Page</a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <div class="hero">
+    <h1>⚔️ HEAD TO HEAD</h1>
+    <p>Pick two players and see their full history against each other — every tournament they've clashed in, singles or team.</p>
+  </div>
+
+  <div class="picker-card">
+    <div class="picker-row">
+      <div class="picker-col">
+        <label>Player 1</label>
+        <select id="player1-select"><option value="">Loading players...</option></select>
+      </div>
+      <div class="vs-label">VS</div>
+      <div class="picker-col">
+        <label>Player 2</label>
+        <select id="player2-select" disabled><option value="">Choose player 1 first</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-area"></div>
+  <div id="h2h-results"></div>
+</div>
+
+<script>
+const URLS = {
+  alltime: 'shuffleboard/all_time.json',
+  teams: 'shuffleboard/teams.json',
+  replacements: 'shuffleboard/replacements.json',
+};
+
+async function fetchJSON(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function tournTag(t) {
+  if (t === 'DEATHMATCH') return '💀 Deathmatch';
+  if (t === 'MARCH MADNESS') return '🏀 March Madness';
+  if (t === 'LEAGUE 2026') return '🥏 League 2026';
+  return t;
+}
+
+let DATA = { displayName: {}, opponentsOf: {}, encounters: {} };
+
+function buildData(alltimeRows, teamsRows, replacementsRows) {
+  const teamLookup = {};
+  teamsRows.forEach(r => { teamLookup[`${r.tournament}|${r.team}`] = [r.member_1, r.member_2].filter(Boolean); });
+
+  const repLookup = {};
+  replacementsRows.forEach(r => {
+    if (!r.player) return;
+    repLookup[`${r.tournament}|${r.month}|${r.player.toLowerCase().trim()}`] = r.replacement;
+  });
+  function resolveName(name, tournament, month) {
+    return repLookup[`${tournament}|${month}|${name.toLowerCase().trim()}`] || name;
+  }
+
+  const displayName = {};
+  function addDisplay(name) {
+    const k = name.toLowerCase().trim();
+    if (!displayName[k]) displayName[k] = name.trim();
+    return k;
+  }
+
+  const opponentsOf = {};
+  const encounters = {};
+  const teamCodePattern = /^team_\d+$/i;
+
+  alltimeRows.forEach(row => {
+    const pAname = (row['player A'] || '').trim();
+    const pBname = (row['player B'] || '').trim();
+    const sA = parseFloat(row['score A']);
+    const sB = parseFloat(row['score B']);
+    const tourn = (row['tournament'] || '').trim();
+    const month = (row['month'] || '').trim();
+    const round = (row['round'] || '').trim();
+    if (!pAname || !pBname || isNaN(sA) || isNaN(sB)) return;
+
+    const keyA = `${tourn}|${pAname}`;
+    const keyB = `${tourn}|${pBname}`;
+    const membersA = teamLookup[keyA] ? teamLookup[keyA] : [resolveName(pAname, tourn, month)];
+    const membersB = teamLookup[keyB] ? teamLookup[keyB] : [resolveName(pBname, tourn, month)];
+
+    membersA.forEach(nameA => {
+      if (teamCodePattern.test(nameA.trim())) return;
+      const kA = addDisplay(nameA);
+      membersB.forEach(nameB => {
+        if (teamCodePattern.test(nameB.trim())) return;
+        const kB = addDisplay(nameB);
+        if (kA === kB) return;
+
+        if (!opponentsOf[kA]) opponentsOf[kA] = new Set();
+        if (!opponentsOf[kB]) opponentsOf[kB] = new Set();
+        opponentsOf[kA].add(kB);
+        opponentsOf[kB].add(kA);
+
+        const pairKey = [kA, kB].sort().join('|');
+        if (!encounters[pairKey]) encounters[pairKey] = [];
+        encounters[pairKey].push({ tournament: tourn, month, round, keyA: kA, keyB: kB, scoreA: sA, scoreB: sB });
+      });
+    });
+  });
+
+  return { displayName, opponentsOf, encounters };
+}
+
+function populatePlayer1(displayName) {
+  const names = Object.keys(displayName).sort((a, b) => displayName[a].localeCompare(displayName[b]));
+  const sel = document.getElementById('player1-select');
+  sel.innerHTML = '<option value="">Choose a player...</option>' + names.map(k => `<option value="${k}">${displayName[k]}</option>`).join('');
+}
+
+function onPlayer1Change() {
+  const k1 = document.getElementById('player1-select').value;
+  const sel2 = document.getElementById('player2-select');
+  document.getElementById('h2h-results').innerHTML = '';
+
+  if (!k1) {
+    sel2.disabled = true;
+    sel2.innerHTML = '<option value="">Choose player 1 first</option>';
+    return;
+  }
+
+  const opponents = [...(DATA.opponentsOf[k1] || [])].sort((a, b) => DATA.displayName[a].localeCompare(DATA.displayName[b]));
+  if (!opponents.length) {
+    sel2.disabled = true;
+    sel2.innerHTML = '<option value="">No recorded opponents</option>';
+    return;
+  }
+  sel2.disabled = false;
+  sel2.innerHTML = '<option value="">Choose a player...</option>' + opponents.map(k => `<option value="${k}">${DATA.displayName[k]}</option>`).join('');
+}
+
+function onPlayer2Change() {
+  const k1 = document.getElementById('player1-select').value;
+  const k2 = document.getElementById('player2-select').value;
+  if (!k1 || !k2) { document.getElementById('h2h-results').innerHTML = ''; return; }
+  renderH2H(k1, k2);
+}
+
+function renderH2H(k1, k2) {
+  const name1 = DATA.displayName[k1], name2 = DATA.displayName[k2];
+  const pairKey = [k1, k2].sort().join('|');
+  const matches = (DATA.encounters[pairKey] || []).slice().sort((a, b) => (a.month || '').localeCompare(b.month || ''));
+
+  let wins1 = 0, wins2 = 0, ties = 0;
+  const byTournament = {};
+
+  matches.forEach(m => {
+    const p1IsA = m.keyA === k1;
+    const score1 = p1IsA ? m.scoreA : m.scoreB;
+    const score2 = p1IsA ? m.scoreB : m.scoreA;
+    let result;
+    if (score1 > score2) { wins1++; result = 1; }
+    else if (score2 > score1) { wins2++; result = 2; }
+    else { ties++; result = 0; }
+
+    if (!byTournament[m.tournament]) byTournament[m.tournament] = { w1: 0, w2: 0, t: 0 };
+    if (result === 1) byTournament[m.tournament].w1++;
+    else if (result === 2) byTournament[m.tournament].w2++;
+    else byTournament[m.tournament].t++;
+
+    m._score1 = score1; m._score2 = score2; m._result = result;
+  });
+
+  const summary = `
+    <div class="h2h-summary">
+      <div class="h2h-side">
+        <div class="h2h-name">${name1}</div>
+        <div class="h2h-score ${wins1 > wins2 ? 'winner' : ''}">${wins1}</div>
+        <div class="h2h-record">Wins</div>
+      </div>
+      <div class="h2h-mid">
+        <div class="total">${matches.length} encounter${matches.length === 1 ? '' : 's'}</div>
+        ${ties ? `<div style="font-size:12px;color:var(--text-muted);">${ties} tied</div>` : ''}
+      </div>
+      <div class="h2h-side">
+        <div class="h2h-name">${name2}</div>
+        <div class="h2h-score ${wins2 > wins1 ? 'winner' : ''}">${wins2}</div>
+        <div class="h2h-record">Wins</div>
+      </div>
+    </div>
+  `;
+
+  const tournCards = Object.entries(byTournament).map(([t, rec]) => `
+    <div class="tourn-card">
+      <div class="tname">${tournTag(t)}</div>
+      <div class="trow"><span>${name1}</span><strong>${rec.w1}</strong></div>
+      <div class="trow"><span>${name2}</span><strong>${rec.w2}</strong></div>
+      ${rec.t ? `<div class="trow"><span>Ties</span><strong>${rec.t}</strong></div>` : ''}
+    </div>
+  `).join('');
+
+  const logRows = matches.map(m => `
+    <tr>
+      <td>${tournTag(m.tournament)}</td>
+      <td>${m.month || '—'}${m.round ? ' · ' + m.round : ''}</td>
+      <td class="num ${m._result === 1 ? 'win-marker' : m._result === 2 ? 'loss-marker' : ''}">${m._score1}</td>
+      <td class="num" style="color:var(--text-muted);font-size:12px;">–</td>
+      <td class="num ${m._result === 2 ? 'win-marker' : m._result === 1 ? 'loss-marker' : ''}">${m._score2}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('h2h-results').innerHTML = `
+    ${summary}
+    <div class="section-title">By Tournament</div>
+    <div class="tourn-grid">${tournCards}</div>
+    <div class="section-title">Match Log</div>
+    <div class="match-log">
+      <table>
+        <thead><tr><th>Tournament</th><th>When</th><th class="num">${name1}</th><th></th><th class="num">${name2}</th></tr></thead>
+        <tbody>${logRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function init() {
+  const [alltimeRows, teamsRows, replacementsRows] = await Promise.all([
+    fetchJSON(URLS.alltime), fetchJSON(URLS.teams), fetchJSON(URLS.replacements)
+  ]);
+
+  if (!alltimeRows || !teamsRows || !replacementsRows) {
+    document.getElementById('error-area').innerHTML =
+      '<div class="error-box">⚠️ Could not load match data. If you just updated scores, run the "Sync Sheets to JSON" workflow first, then refresh.</div>';
+    document.getElementById('player1-select').innerHTML = '<option value="">Data unavailable</option>';
+    return;
+  }
+
+  DATA = buildData(alltimeRows, teamsRows, replacementsRows);
+  populatePlayer1(DATA.displayName);
+
+  document.getElementById('player1-select').addEventListener('change', onPlayer1Change);
+  document.getElementById('player2-select').addEventListener('change', onPlayer2Change);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
