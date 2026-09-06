@@ -191,6 +191,12 @@
   }
   .player-chip.active { background: var(--dartred); border-color: var(--dartred); color: white; }
 
+  .trend-toggle {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 5px 14px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--board-soft);
+  }
+  .trend-toggle.active { background: var(--dartred); border-color: var(--dartred); color: white; }
+
   .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
   .profile-stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
   .profile-stat .num { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; color: var(--dartgreen); }
@@ -797,6 +803,81 @@ function selectPlayer(name) {
   renderPlayers();
 }
 
+let trendMetric = 'ppr';
+let trendMatches = [];
+let trendPlayerName = '';
+
+function buildTrendData(matches, playerName, metric) {
+  const ascending = [...matches].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  const points = [];
+  ascending.forEach(m => {
+    const ls = (m.leg_stats || {})[playerName];
+    if (!ls) return;
+    let val = null;
+    if (metric === 'ppr') val = ls.ppr;
+    else if (metric === 'checkout') val = (ls.checkout_attempts > 0) ? ls.checkout_pct : null;
+    if (val === null || val === undefined) return;
+    points.push({ date: m.date, value: val });
+  });
+  return points;
+}
+
+function renderTrendChart(points, metric) {
+  const wrap = document.getElementById('player-trend-wrap');
+  if (!wrap) return;
+  if (points.length < 2) {
+    wrap.innerHTML = '<div class="empty-note">Not enough matches yet to show a trend.</div>';
+    return;
+  }
+
+  const W = 600, H = 200, padL = 38, padR = 16, padT = 16, padB = 26;
+  const values = points.map(p => p.value);
+  const maxV = Math.max(...values), minV = Math.min(...values);
+  const range = maxV - minV || 1;
+  const yMax = metric === 'checkout' ? 100 : Math.ceil((maxV + range * 0.15) / 5) * 5;
+  const yMin = metric === 'checkout' ? 0 : Math.max(0, Math.floor((minV - range * 0.15) / 5) * 5);
+
+  const xStep = points.length > 1 ? (W - padL - padR) / (points.length - 1) : 0;
+  const yScale = v => H - padB - ((v - yMin) / ((yMax - yMin) || 1)) * (H - padT - padB);
+
+  const pathPoints = points.map((pt, i) => `${(padL + i * xStep).toFixed(1)},${yScale(pt.value).toFixed(1)}`);
+  const linePath = 'M ' + pathPoints.join(' L ');
+
+  const avg = values.reduce((s, v) => s + v, 0) / values.length;
+  const avgY = yScale(avg);
+  const avgLabel = metric === 'checkout' ? avg.toFixed(1) + '%' : avg.toFixed(1);
+
+  const dots = points.map((pt, i) => {
+    const x = (padL + i * xStep).toFixed(1);
+    const y = yScale(pt.value).toFixed(1);
+    const label = metric === 'checkout' ? pt.value.toFixed(1) + '%' : pt.value.toFixed(1);
+    return `<circle cx="${x}" cy="${y}" r="3.5" fill="#a4243b" stroke="#fbf8f1" stroke-width="1"><title>${pt.date || ''}: ${label}</title></circle>`;
+  }).join('');
+
+  const labelIdxs = points.length <= 5 ? points.map((_, i) => i) : [0, Math.floor((points.length - 1) / 2), points.length - 1];
+  const xLabels = labelIdxs.map(i => {
+    const x = (padL + i * xStep).toFixed(1);
+    const d = points[i].date || '';
+    return `<text x="${x}" y="${H - 8}" text-anchor="middle" font-size="10" fill="#767b8a" font-family="'Space Mono', monospace">${d.slice(5) || d}</text>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="max-width:100%; display:block;">
+      <line x1="${padL}" y1="${avgY.toFixed(1)}" x2="${W - padR}" y2="${avgY.toFixed(1)}" stroke="#ddd4bf" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="${W - padR}" y="${(avgY - 6).toFixed(1)}" text-anchor="end" font-size="10" fill="#767b8a" font-family="'Space Mono', monospace">avg ${avgLabel}</text>
+      <path d="${linePath}" fill="none" stroke="#a4243b" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+      ${xLabels}
+    </svg>
+  `;
+}
+
+function setTrendMetric(metric) {
+  trendMetric = metric;
+  document.querySelectorAll('.trend-toggle').forEach(b => b.classList.toggle('active', b.dataset.metric === metric));
+  renderTrendChart(buildTrendData(trendMatches, trendPlayerName, metric), metric);
+}
+
 function drawPlayerProfile() {
   const p = STATE.players[STATE.selectedPlayer];
   if (!p) return;
@@ -843,6 +924,17 @@ function drawPlayerProfile() {
     </div>
 
     <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+        <div style="font-weight:700;">Performance trend</div>
+        <div style="display:flex; gap:6px;">
+          <button class="trend-toggle active" data-metric="ppr" onclick="setTrendMetric('ppr')">PPR</button>
+          <button class="trend-toggle" data-metric="checkout" onclick="setTrendMetric('checkout')">Checkout %</button>
+        </div>
+      </div>
+      <div id="player-trend-wrap"></div>
+    </div>
+
+    <div class="card">
       <div style="font-weight:700; margin-bottom:12px;">Dartboard heatmap</div>
       <div style="display:flex; justify-content:center;" id="player-dartboard-wrap"></div>
     </div>
@@ -852,6 +944,11 @@ function drawPlayerProfile() {
   `;
 
   renderDartboardHeatmap(p.number_counts, 'player-dartboard-wrap');
+
+  trendMatches = matchesForPlayer;
+  trendPlayerName = p.name;
+  document.querySelectorAll('.trend-toggle').forEach(b => b.classList.toggle('active', b.dataset.metric === trendMetric));
+  renderTrendChart(buildTrendData(trendMatches, trendPlayerName, trendMetric), trendMetric);
 }
 
 function renderStats() {
