@@ -385,7 +385,7 @@ function handleAvatarError(img, name, size, fontSize) {
 const avatarEl = (name, size, fontSize) => {
   size = size || '36px';
   fontSize = fontSize || '12px';
-  const safeSrc = encodeURIComponent(name.toLowerCase().trim());
+  const safeSrc = encodeURIComponent(name.toLowerCase().trim().normalize('NFD'));
   const safeAttr = name.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
   return '<img src="shuffleboard_league2026_avatars/' + safeSrc + '.png" alt="" loading="lazy" style="width:' + size + ';height:' + size + ';border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="handleAvatarError(this,\'' + safeAttr + '\',\'' + size + '\',\'' + fontSize + '\')">';
 };
