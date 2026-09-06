@@ -175,7 +175,7 @@ async function fetchCSV(url) {
 }
 
 const initials = n => n.split(' ').map(p => p[0]).join('').toUpperCase().substring(0, 2);
-const rankBadge = r => `<span class="rank-badge ${r===1?'r1':r===2?'r2':r===3?'r3':''}"></span>` + r;
+const rankBadge = r => `<span class="rank-badge ${r===1?'r1':r===2?'r2':r===3?'r3':''}">${r}</span>`;
 
 function tournTag(t) {
   if (t === 'DEATHMATCH') return '<span class="tourn-tag tourn-dm">💀 DM</span>';
@@ -462,7 +462,6 @@ async function init() {
       <td class="num">${rankBadge(p.ranking)}</td>
       <td>
         <div class="player-cell">
-          <div class="avatar">${initials(p.player)}</div>
           <div><span class="player-name">${p.player}</span>${tags}</div>
         </div>
       </td>
