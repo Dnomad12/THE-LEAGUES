@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --red: #d32f2f; --navy: #002d80; --navy-light: #1a4db5;
+    --red: #d32f2f; --navy: #10224d; --navy-light: #2954c8;
     --gold: #f5c518; --silver: #b0b8c5; --bronze: #cd7f32;
     --bg: #f4f6fa; --surface: #ffffff; --border: #e0e4ef;
     --text: #1a1f2e; --text-muted: #6b7280; --green: #16a34a;
@@ -522,7 +522,7 @@ function renderTable(players, monthly=false) {
       ? '<td class="num">' + (p.penalty_deductions > 0 ? '<span class="tag-red">-' + p.penalty_deductions + '</span>' : '—') + '</td>'
       : '';
     const divider = (!monthly && p.ranking === 7)
-      ? '<tr><td colspan="' + colCount + '" style="padding:0;"><div style="display:flex;align-items:center;gap:10px;padding:6px 16px;background:#f0f4ff;border-top:2px dashed #1a4db5;border-bottom:2px dashed #1a4db5;"><span style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;letter-spacing:1px;color:#1a4db5;text-transform:uppercase;">🎯 Playoff cutoff — Top 7 qualify</span></div></td></tr>'
+      ? '<tr><td colspan="' + colCount + '" style="padding:0;"><div style="display:flex;align-items:center;gap:10px;padding:6px 16px;background:#f0f4ff;border-top:2px dashed #2954c8;border-bottom:2px dashed #2954c8;"><span style="font-family:Barlow Condensed,sans-serif;font-size:11px;font-weight:800;letter-spacing:1px;color:#2954c8;text-transform:uppercase;">🎯 Playoff cutoff — Top 7 qualify</span></div></td></tr>'
       : '';
     const leaderClass = p.ranking === 1 ? ' leader' : '';
     return '<tr>'
@@ -893,7 +893,7 @@ function renderPlayoffs() {
 
       // Column 1: Quarter-Finals
       + '<div>'
-        + colTitle('Quarter-Finals', '#1a4db5')
+        + colTitle('Quarter-Finals', '#2954c8')
         + '<div style="display:flex;flex-direction:column;gap:16px;">'
           + matchBox(slot(3), slot(4))
           + matchBox(slot(2), slot(5))
