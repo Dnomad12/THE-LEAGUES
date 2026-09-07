@@ -18,7 +18,8 @@
 
   /* HEADER */
   .header { background: var(--surface); box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; border-bottom: 3px solid var(--red); }
-  .header-inner { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
+  .header-inner { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; position: relative; }
+  @media (min-width: 1250px) { .header-inner > .nav { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; } }
   .brand { display: flex; align-items: center; gap: 14px; cursor: pointer; text-decoration: none; }
   .brand-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--red); text-transform: uppercase; }
   .brand-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--navy); letter-spacing: 1px; }
@@ -26,9 +27,8 @@
   .nav-btn { background: none; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 14px; border-radius: 6px; text-transform: uppercase; transition: all 0.15s; }
   .nav-btn:hover { background: var(--bg); color: var(--navy); }
   .nav-btn.active { background: var(--navy); color: white; }
-  .back-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; text-transform: uppercase; background: var(--bg); border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; }
-  .back-btn:hover { background: var(--border); color: var(--navy); }
-  .greeting-badge { background: var(--bg); border-left: 3px solid var(--red); padding: 6px 14px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); }
+  .back-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 14px; border-radius: 6px; text-transform: uppercase; background: none; border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+  .back-btn:hover { background: var(--bg); color: var(--navy); }
 
   /* PAGES */
   .page { display: none; max-width: 1300px; margin: 0 auto; padding: 32px 24px; }
@@ -145,10 +145,9 @@
     .hero-stat-num { font-size: 24px; }
     body { padding-bottom: 72px; }
     /* Header */
-    .back-btn { font-size: 11px; padding: 6px 10px; }
+    .back-btn { display: none; }
     .brand-title { font-size: 17px; }
     .brand-sub { font-size: 9px; }
-    .greeting-badge { display: none; }
     /* Schedule table: scrollable */
     #schedule-table { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .schedule-table { min-width: 480px; font-size: 12px; }
@@ -201,7 +200,6 @@
     <nav class="nav">
       <button class="nav-btn active" onclick="showPage('home')" id="nav-home">🏠 Home</button>
       <button class="nav-btn" onclick="showPage('rankings')" id="nav-rankings">🏆 Rankings</button>
-      <button class="nav-btn" onclick="showPage('monthly')" id="nav-monthly">📅 Monthly</button>
       <button class="nav-btn" onclick="showPage('fixtures')" id="nav-fixtures">⚔️ Fixtures</button>
       <button class="nav-btn" onclick="showPage('stats')" id="nav-stats">📊 Player Stats</button>
       <button class="nav-btn" onclick="showPage('playoffs')" id="nav-playoffs">🎯 Playoffs</button>
@@ -209,8 +207,6 @@
     <div style="display:flex;align-items:center;gap:12px;">
       <a href="index.html" class="back-btn">🏠 Main Page</a>
       <a href="shuffleboard_all_time.html" class="back-btn">🏆 All-Time</a>
-      <a href="head_to_head.html" class="back-btn">⚔️ Head to Head</a>
-      <div class="greeting-badge" id="greeting">🥏 Season 2026</div>
     </div>
   </div>
 </header>
@@ -218,7 +214,6 @@
 <div class="mobile-nav">
   <button class="mobile-nav-btn active" onclick="showPage('home')" id="mnav-home"><span class="mobile-nav-icon">🏠</span>Home</button>
   <button class="mobile-nav-btn" onclick="showPage('rankings')" id="mnav-rankings"><span class="mobile-nav-icon">🏆</span>Ranks</button>
-  <button class="mobile-nav-btn" onclick="showPage('monthly')" id="mnav-monthly"><span class="mobile-nav-icon">📅</span>Monthly</button>
   <button class="mobile-nav-btn" onclick="showPage('fixtures')" id="mnav-fixtures"><span class="mobile-nav-icon">⚔️</span>Fixtures</button>
   <button class="mobile-nav-btn" onclick="showPage('stats')" id="mnav-stats"><span class="mobile-nav-icon">📊</span>Stats</button>
   <button class="mobile-nav-btn" onclick="showPage('playoffs')" id="mnav-playoffs"><span class="mobile-nav-icon">🎯</span>Playoffs</button>
@@ -264,14 +259,13 @@
       <canvas id="ranking-chart"></canvas>
     </div>
   </div>
-</div>
 
-<!-- MONTHLY -->
-<div class="page" id="page-monthly">
-  <div class="section-title">📅 Monthly Rankings</div>
-  <div class="section-subtitle">Performance breakdown per session month</div>
-  <div class="month-tabs" id="month-tabs"></div>
-  <div id="monthly-table"></div>
+  <div style="background:var(--surface);border-radius:12px;padding:24px;box-shadow:var(--shadow);margin-top:24px;">
+    <div style="font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📅 Monthly Rankings</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Performance breakdown per session month</div>
+    <div class="month-tabs" id="month-tabs"></div>
+    <div id="monthly-table"></div>
+  </div>
 </div>
 
 <!-- FIXTURES -->
@@ -979,9 +973,6 @@ function showPage(p) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
-  const hour = new Date().getHours();
-  document.getElementById('greeting').textContent = (hour < 12 ? '☕ Good morning' : hour < 17 ? '☀️ Good afternoon' : '🌙 Good evening') + ', Shuffler!';
-
   const results = await Promise.allSettled([
     fetchCSV(SHEET_CSV), fetchCSV(BADGES_CSV)
   ]);
