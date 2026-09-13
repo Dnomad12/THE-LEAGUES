@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — The Leagues</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #d32f2f;
+    --navy: #10224d;
+    --navy-light: #2954c8;
+    --gold: #f5c518;
+    --bg: #faf6ee;
+    --card-bg: #ffffff;
+    --border: #e7e0d0;
+    --text: #1a2138;
+    --text-muted: #767b8a;
+    --green: #16a34a;
+    --shadow: 0 4px 18px rgba(16,34,77,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 100px; }
+
+  .header { background: var(--card-bg); border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; background: var(--navy); padding: 2px 8px; border-radius: 4px; }
+  .brand-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .back-btn { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); padding: 8px 16px; border-radius: 6px; text-transform: uppercase; text-decoration: none; }
+  .back-btn:hover { background: var(--bg); color: var(--navy); }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+  .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .muted { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+
+  label { display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 11.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; margin-top: 14px; }
+  label:first-child { margin-top: 0; }
+  input[type="text"], input[type="password"], select, textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+    font-family: 'Barlow', sans-serif; font-size: 14px; color: var(--text); background: var(--card-bg);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--navy-light); }
+
+  .btn { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; font-size: 13px; padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+  .btn-secondary { background: var(--bg); color: var(--text); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: #fff0f0; color: var(--red); border: 1.5px solid #ffcdd2; }
+  .btn-danger:hover { background: #ffebee; }
+  .btn-small { padding: 6px 14px; font-size: 11.5px; }
+
+  .status-msg { border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .status-msg.show { display: block; }
+  .status-msg.ok { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+  .status-msg.error { background: #fff0f0; border: 1px solid #ffcdd2; color: var(--red); }
+  .status-msg.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+
+  .connect-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .connect-row > div { flex: 1; min-width: 220px; }
+  .connected-badge { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 20px; padding: 6px 14px; font-size: 13px; color: #15803d; font-weight: 600; }
+
+  .event-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; position: relative; }
+  .event-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; padding-right: 90px; }
+  .event-card-head .icon-input { width: 56px; text-align: center; font-size: 18px; flex-shrink: 0; }
+  .event-card-head .title-input { flex: 1; font-weight: 700; font-size: 15px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .delete-btn { position: absolute; top: 14px; right: 14px; }
+
+  .status-pill { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-left: 8px; }
+  .status-pill.open { background: #dcfce7; color: #15803d; }
+  .status-pill.completed { background: #e5e7eb; color: #374151; }
+  .status-pill.coming-soon { background: #fff3e0; color: #e65100; }
+
+  .save-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg);
+    border-top: 1px solid var(--border); box-shadow: 0 -4px 18px rgba(16,34,77,0.08);
+    padding: 16px 24px; display: flex; justify-content: center; align-items: center; gap: 16px; z-index: 200;
+  }
+  .save-bar-inner { max-width: 900px; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .empty-hint { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; }
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-sub">The Leagues</span>
+      <span class="brand-title">Admin</span>
+    </a>
+    <a class="back-btn" href="index.html">🏠 Main Page</a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- CONNECT -->
+  <div class="card" id="connect-card">
+    <div class="section-title">🔑 Connect to GitHub</div>
+    <p class="muted" style="margin-bottom:14px;">
+      Paste a GitHub personal access token to load and publish changes to the tournament list.
+      Use a <strong>fine-grained token</strong> scoped only to the THE-LEAGUES repository with
+      <strong>Contents: Read and write</strong> permission. The token is stored only in this browser
+      (never sent anywhere except directly to GitHub) — don't share this page or this browser's storage with anyone you don't trust.
+    </p>
+    <div id="connect-form">
+      <div class="connect-row">
+        <div>
+          <label>Personal Access Token</label>
+          <input type="password" id="token-input" placeholder="github_pat_...">
+        </div>
+        <button class="btn btn-primary" onclick="connect()" id="connect-btn">Connect</button>
+      </div>
+    </div>
+    <div id="connected-row" style="display:none; margin-top:14px;">
+      <span class="connected-badge">✓ Connected</span>
+      <button class="btn btn-secondary btn-small" onclick="disconnect()" style="margin-left:10px;">Disconnect</button>
+    </div>
+    <div class="status-msg" id="connect-status"></div>
+  </div>
+
+  <!-- EDITOR (hidden until connected) -->
+  <div id="editor-section" style="display:none;">
+    <div class="card">
+      <div class="section-title">🏆 Current Events</div>
+      <div id="events-list"></div>
+      <button class="btn btn-secondary" onclick="addEvent()">+ Add New Event</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="save-bar" id="save-bar" style="display:none;">
+  <div class="save-bar-inner">
+    <div class="status-msg" id="save-status" style="margin-bottom:0; flex:1;"></div>
+    <button class="btn btn-primary" onclick="publish()" id="publish-btn">💾 Save &amp; Publish</button>
+  </div>
+</div>
+
+<script>
+const OWNER = 'dnomad12';
+const REPO = 'THE-LEAGUES';
+const PATH = 'data/tournaments.json';
+const BRANCH = 'main';
+const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+
+let TOKEN = null;
+let CURRENT_SHA = null;
+let EVENTS = [];
+
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+function base64ToUtf8(b64) {
+  const binary = atob(b64.replace(/\n/g, ''));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function showStatus(elId, type, msg) {
+  const el = document.getElementById(elId);
+  el.className = 'status-msg show ' + type;
+  el.textContent = msg;
+}
+function clearStatus(elId) {
+  const el = document.getElementById(elId);
+  el.className = 'status-msg';
+  el.textContent = '';
+}
+
+function slugify(title, sport) {
+  const s = (title || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return (sport || 'event').slice(0, 2) + '-' + s;
+}
+
+async function ghFetch(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': 'Bearer ' + TOKEN,
+      'Accept': 'application/vnd.github+json',
+      ...(options.headers || {}),
+    },
+  });
+  return res;
+}
+
+async function loadEvents() {
+  clearStatus('connect-status');
+  try {
+    const res = await ghFetch(`${API_BASE}?ref=${BRANCH}`);
+    if (res.status === 401) { showStatus('connect-status', 'error', '⚠️ Invalid or expired token.'); return false; }
+    if (res.status === 404) {
+      // File doesn't exist yet -- start empty, will be created on first publish
+      EVENTS = [];
+      CURRENT_SHA = null;
+      return true;
+    }
+    if (!res.ok) { showStatus('connect-status', 'error', '⚠️ Could not load data (status ' + res.status + ').'); return false; }
+    const data = await res.json();
+    CURRENT_SHA = data.sha;
+    EVENTS = JSON.parse(base64ToUtf8(data.content));
+    return true;
+  } catch (e) {
+    showStatus('connect-status', 'error', '⚠️ Network error: ' + e.message);
+    return false;
+  }
+}
+
+async function connect() {
+  const token = document.getElementById('token-input').value.trim();
+  if (!token) { showStatus('connect-status', 'error', 'Paste a token first.'); return; }
+  TOKEN = token;
+
+  const btn = document.getElementById('connect-btn');
+  btn.disabled = true;
+  btn.textContent = 'Connecting...';
+
+  const ok = await loadEvents();
+
+  btn.disabled = false;
+  btn.textContent = 'Connect';
+
+  if (ok) {
+    localStorage.setItem('leagues_admin_token', token);
+    document.getElementById('connect-form').style.display = 'none';
+    document.getElementById('connected-row').style.display = 'block';
+    document.getElementById('editor-section').style.display = 'block';
+    document.getElementById('save-bar').style.display = 'flex';
+    showStatus('connect-status', 'ok', '✓ Connected and loaded ' + EVENTS.length + ' event(s).');
+    renderEvents();
+  }
+}
+
+function disconnect() {
+  TOKEN = null;
+  CURRENT_SHA = null;
+  EVENTS = [];
+  localStorage.removeItem('leagues_admin_token');
+  document.getElementById('token-input').value = '';
+  document.getElementById('connect-form').style.display = 'block';
+  document.getElementById('connected-row').style.display = 'none';
+  document.getElementById('editor-section').style.display = 'none';
+  document.getElementById('save-bar').style.display = 'none';
+  clearStatus('connect-status');
+}
+
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  if (!EVENTS.length) {
+    list.innerHTML = '<div class="empty-hint">No events yet — add one below.</div>';
+    return;
+  }
+  list.innerHTML = EVENTS.map((ev, i) => `
+    <div class="event-card">
+      <button class="btn btn-danger btn-small delete-btn" onclick="deleteEvent(${i})">Delete</button>
+      <div class="event-card-head">
+        <input type="text" class="icon-input" value="${escAttr(ev.icon)}" onchange="updateField(${i},'icon',this.value)" title="Emoji icon">
+        <input type="text" class="title-input" value="${escAttr(ev.title)}" onchange="updateField(${i},'title',this.value)" placeholder="Event title">
+        <span class="status-pill ${ev.status}">${ev.status}</span>
+      </div>
+      <div class="field-row">
+        <div>
+          <label>Sport</label>
+          <select onchange="updateField(${i},'sport',this.value)">
+            <option value="shuffleboard" ${ev.sport === 'shuffleboard' ? 'selected' : ''}>Shuffleboard</option>
+            <option value="petanque" ${ev.sport === 'petanque' ? 'selected' : ''}>Pétanque</option>
+            <option value="darts" ${ev.sport === 'darts' ? 'selected' : ''}>Darts</option>
+          </select>
+        </div>
+        <div>
+          <label>Status</label>
+          <select onchange="updateField(${i},'status',this.value)">
+            <option value="open" ${ev.status === 'open' ? 'selected' : ''}>Open</option>
+            <option value="coming-soon" ${ev.status === 'coming-soon' ? 'selected' : ''}>Coming Soon</option>
+            <option value="completed" ${ev.status === 'completed' ? 'selected' : ''}>Completed</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label>Date label</label>
+          <input type="text" value="${escAttr(ev.date)}" onchange="updateField(${i},'date',this.value)" placeholder="e.g. Jan - Dec 2026">
+        </div>
+        <div>
+          <label>Location</label>
+          <input type="text" value="${escAttr(ev.location)}" onchange="updateField(${i},'location',this.value)">
+        </div>
+      </div>
+      <div class="field-row">
+        <div>
+          <label>Teams / Format</label>
+          <input type="text" value="${escAttr(ev.teams)}" onchange="updateField(${i},'teams',this.value)" placeholder="e.g. Singles, Teams">
+        </div>
+        <div>
+          <label>Link (page filename)</label>
+          <input type="text" value="${escAttr(ev.link)}" onchange="updateField(${i},'link',this.value)" placeholder="e.g. shuffleboard_league2026.html">
+        </div>
+      </div>
+      <label>Description</label>
+      <textarea onchange="updateField(${i},'description',this.value)">${escHtml(ev.description)}</textarea>
+    </div>
+  `).join('');
+}
+
+function escAttr(s) { return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function escHtml(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updateField(idx, field, value) {
+  EVENTS[idx][field] = value;
+  if (field === 'title' || field === 'sport') EVENTS[idx].id = slugify(EVENTS[idx].title, EVENTS[idx].sport);
+  if (field === 'status') renderEvents();
+}
+
+function deleteEvent(idx) {
+  if (!confirm('Remove "' + EVENTS[idx].title + '" from the events list?')) return;
+  EVENTS.splice(idx, 1);
+  renderEvents();
+}
+
+function addEvent() {
+  EVENTS.push({
+    id: '', sport: 'shuffleboard', icon: '🏆', title: 'New Event', date: '', status: 'coming-soon',
+    location: '', description: '', teams: '', link: '#'
+  });
+  EVENTS[EVENTS.length - 1].id = slugify('New Event', 'shuffleboard');
+  renderEvents();
+  document.getElementById('events-list').lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function publish() {
+  const btn = document.getElementById('publish-btn');
+  btn.disabled = true;
+  btn.textContent = 'Publishing...';
+  showStatus('save-status', 'info', 'Committing to GitHub...');
+
+  try {
+    const body = {
+      message: 'Update tournaments via admin page',
+      content: utf8ToBase64(JSON.stringify(EVENTS, null, 2) + '\n'),
+      branch: BRANCH,
+    };
+    if (CURRENT_SHA) body.sha = CURRENT_SHA;
+
+    const res = await ghFetch(API_BASE, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+    if (res.status === 409) {
+      showStatus('save-status', 'error', '⚠️ The file changed on GitHub since you loaded it. Reloading latest version — please redo your edit.');
+      await loadEvents();
+      renderEvents();
+      btn.disabled = false; btn.textContent = '💾 Save & Publish';
+      return;
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      showStatus('save-status', 'error', '⚠️ Publish failed (status ' + res.status + '). ' + errText.slice(0, 150));
+      btn.disabled = false; btn.textContent = '💾 Save & Publish';
+      return;
+    }
+
+    const data = await res.json();
+    CURRENT_SHA = data.content.sha;
+    showStatus('save-status', 'ok', '✓ Published! Live on the hub within a few seconds.');
+  } catch (e) {
+    showStatus('save-status', 'error', '⚠️ Network error: ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💾 Save & Publish';
+}
+
+// Auto-reconnect if a token is already stored in this browser
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('leagues_admin_token');
+  if (saved) {
+    document.getElementById('token-input').value = saved;
+    connect();
+  }
+});
+</script>
+</body>
+</html>

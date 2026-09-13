@@ -708,44 +708,20 @@
 </div>
 
 <script>
-const tournaments = [
-  {
-    id: 'sb-2026',
-    sport: 'shuffleboard',
-    icon: '🥏',
-    title: 'League 2026',
-    date: 'Jan - Dec 2026',
-    status: 'open',
-    location: 'Craft Bier Bar, Hamburg',
-    description: 'The 2026 seasonal shuffleboard league, played as a singles format with monthly tournaments and playoffs.',
-    teams: 'Singles',
-    link: 'shuffleboard_league2026.html'
-  },
-  {
-    id: 'sb-deathmatch',
-    sport: 'shuffleboard',
-    icon: '💀',
-    title: 'Deathmatch',
-    date: 'Completed',
-    status: 'completed',
-    location: 'Craft Bier Bar, Hamburg',
-    description: 'A knockout team tournament — every match counted, no second chances.',
-    teams: 'Teams',
-    link: 'shuffleboard_deathmatch.html'
-  },
-  {
-    id: 'sb-marchmadness',
-    sport: 'shuffleboard',
-    icon: '🏀',
-    title: 'March Madness',
-    date: 'Completed',
-    status: 'completed',
-    location: 'Craft Bier Bar, Hamburg',
-    description: "A team tournament played across the season's shortest, fastest month.",
-    teams: 'Teams',
-    link: 'shuffleboard_marchmadness.html'
+let tournaments = [];
+
+async function loadTournaments() {
+  try {
+    const res = await fetch('data/tournaments.json');
+    if (!res.ok) throw new Error('fetch failed');
+    tournaments = await res.json();
+  } catch (e) {
+    tournaments = [];
+    document.getElementById('events-grid').innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">⚠️ Could not load tournament data. Try refreshing.</div>';
   }
-];
+  renderTournaments();
+}
 
 function renderTournaments(filter = 'all') {
   const grid = document.getElementById('events-grid');
@@ -790,7 +766,7 @@ function filterByScheme(btn, scheme) {
 }
 
 // Initial render
-renderTournaments();
+loadTournaments();
 </script>
 
 </body>
