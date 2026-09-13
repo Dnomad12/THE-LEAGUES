@@ -712,7 +712,7 @@ let tournaments = [];
 
 async function loadTournaments() {
   try {
-    const res = await fetch('data/tournaments.json');
+    const res = await fetch('data/tournaments.json?_=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) throw new Error('fetch failed');
     tournaments = await res.json();
   } catch (e) {
