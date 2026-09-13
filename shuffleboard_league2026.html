@@ -845,8 +845,46 @@ function renderPlayerStats() {
 }
 
 // ── RENDER PLAYOFFS ───────────────────────────────────────────────────────────
+function computePlayoffResults(playoffFixtures) {
+  const groups = {};
+  playoffFixtures.forEach(f => {
+    const key = f.round.replace(/-\d+$/, '');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(f);
+  });
+
+  const results = {};
+  Object.keys(groups).forEach(key => {
+    const games = groups[key].filter(g => g.scoreA !== null && g.scoreB !== null && g.playerA && g.playerB);
+    if (!games.length) return;
+    const names = [...new Set(games.flatMap(g => [g.playerA, g.playerB]))];
+    if (names.length !== 2) return;
+    const [n1, n2] = names;
+    let w1 = 0, w2 = 0;
+    games.forEach(g => {
+      const winner = g.scoreA > g.scoreB ? g.playerA : (g.scoreB > g.scoreA ? g.playerB : null);
+      if (winner === n1) w1++; else if (winner === n2) w2++;
+    });
+    const decided = w1 >= 2 || w2 >= 2;
+    results[key] = {
+      p1: n1, p2: n2, w1, w2,
+      winner: decided ? (w1 > w2 ? n1 : n2) : null,
+      loser: decided ? (w1 > w2 ? n2 : n1) : null,
+      decided,
+    };
+  });
+  return results;
+}
+
+function findPlayerStats(name) {
+  if (!name) return null;
+  const k = name.toLowerCase().trim();
+  return APP.stats.find(p => p.player.toLowerCase().trim() === k) || null;
+}
+
 function renderPlayoffs() {
   const top7 = APP.stats.slice(0, 7);
+  const playoffResults = computePlayoffResults(APP.playoffFixtures || []);
 
   const slot = (idx, bye=false, label='') => {
     const p = idx !== null ? top7[idx] : null;
@@ -868,8 +906,34 @@ function renderPlayoffs() {
   const matchBox = (a, b) =>
     '<div style="background:var(--bg);border-radius:14px;padding:10px;">' + a + vs + b + '</div>';
 
+  const realSide = (name, wins, isWinner) => {
+    const p = findPlayerStats(name);
+    if (!p) return slot(null, false, 'TBD');
+    return '<div style="background:' + (isWinner ? '#f0fdf4' : 'var(--surface)') + ';border:' + (isWinner ? '2px solid var(--green)' : '1.5px solid var(--border)') + ';border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);">'
+      + '<span style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;color:var(--text-muted);min-width:22px;">#' + p.ranking + '</span>'
+      + avatarEl(p.player, '32px', '11px')
+      + '<span style="font-weight:700;font-size:14px;flex:1;">' + p.player.split(' ')[0] + (isWinner ? ' ✓' : '') + '</span>'
+      + '<span style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:800;color:' + (isWinner ? 'var(--green)' : 'var(--text-muted)') + ';">' + wins + '</span>'
+      + '</div>';
+  };
+
+  const realMatchBox = (key, fallbackA, fallbackB) => {
+    const r = playoffResults[key];
+    if (!r) return matchBox(fallbackA, fallbackB);
+    const aWin = r.decided && r.winner === r.p1;
+    const bWin = r.decided && r.winner === r.p2;
+    return '<div style="background:var(--bg);border-radius:14px;padding:10px;">'
+      + realSide(r.p1, r.w1, aWin) + vs + realSide(r.p2, r.w2, bWin)
+      + '</div>';
+  };
+
   const colTitle = (text, color) =>
     '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:white;background:' + color + ';padding:6px 12px;border-radius:6px;text-align:center;margin-bottom:14px;">' + text + '</div>';
+
+  const champ = playoffResults['F'] && playoffResults['F'].decided ? findPlayerStats(playoffResults['F'].winner) : null;
+  const runnerUp = playoffResults['F'] && playoffResults['F'].decided ? findPlayerStats(playoffResults['F'].loser) : null;
+  const third = playoffResults['SFL'] && playoffResults['SFL'].decided ? findPlayerStats(playoffResults['SFL'].winner) : null;
+  const fourth = playoffResults['SFL'] && playoffResults['SFL'].decided ? findPlayerStats(playoffResults['SFL'].loser) : null;
 
   document.getElementById('bracket-content').innerHTML =
     // Seedings
@@ -891,9 +955,9 @@ function renderPlayoffs() {
       + '<div>'
         + colTitle('Quarter-Finals', '#2954c8')
         + '<div style="display:flex;flex-direction:column;gap:16px;">'
-          + matchBox(slot(3), slot(4))
-          + matchBox(slot(2), slot(5))
-          + matchBox(slot(1), slot(6))
+          + realMatchBox('QF1', slot(3), slot(4))
+          + realMatchBox('QF2', slot(2), slot(5))
+          + realMatchBox('QF3', slot(1), slot(6))
         + '</div>'
       + '</div>'
 
@@ -901,8 +965,8 @@ function renderPlayoffs() {
       + '<div>'
         + colTitle('Semi-Finals', '#7b1fa2')
         + '<div style="display:flex;flex-direction:column;gap:16px;padding-top:40px;">'
-          + matchBox(slot(0, true), slot(null, false, 'QF1 Winner'))
-          + matchBox(slot(null, false, 'QF2 Winner'), slot(null, false, 'QF3 Winner'))
+          + realMatchBox('SF1', slot(0, true), slot(null, false, 'QF1 Winner'))
+          + realMatchBox('SF2', slot(null, false, 'QF2 Winner'), slot(null, false, 'QF3 Winner'))
         + '</div>'
       + '</div>'
 
@@ -910,10 +974,13 @@ function renderPlayoffs() {
       + '<div>'
         + colTitle('Final', 'var(--red)')
         + '<div style="padding-top:90px;">'
-          + matchBox(slot(null, false, 'SF1 Winner'), slot(null, false, 'SF2 Winner'))
+          + realMatchBox('F', slot(null, false, 'SF1 Winner'), slot(null, false, 'SF2 Winner'))
           + '<div style="background:linear-gradient(135deg,var(--gold),#ffb300);border-radius:14px;padding:20px;text-align:center;margin-top:16px;">'
-            + '<div style="font-size:32px;margin-bottom:4px;">🏆</div>'
-            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;color:#5a3e00;text-transform:uppercase;letter-spacing:1px;">Champion</div>'
+            + (champ
+                ? '<div style="font-size:28px;margin-bottom:4px;">🏆</div>'
+                  + '<div style="font-weight:800;font-size:15px;color:#5a3e00;">' + champ.player + '</div>'
+                : '<div style="font-size:32px;margin-bottom:4px;">🏆</div>'
+                  + '<div style="font-family:Barlow Condensed,sans-serif;font-size:14px;font-weight:900;color:#5a3e00;text-transform:uppercase;letter-spacing:1px;">Champion</div>')
           + '</div>'
         + '</div>'
       + '</div>'
@@ -928,11 +995,14 @@ function renderPlayoffs() {
         + '<span style="font-size:13px;color:var(--text-muted);">Semi-final losers play for 3rd</span>'
       + '</div>'
       + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start;">'
-        + '<div>' + matchBox(slot(null, false, 'SF1 Loser'), slot(null, false, 'SF2 Loser')) + '</div>'
+        + '<div>' + realMatchBox('SFL', slot(null, false, 'SF1 Loser'), slot(null, false, 'SF2 Loser')) + '</div>'
         + '<div style="display:flex;align-items:center;justify-content:center;padding-top:30px;">'
           + '<div style="background:linear-gradient(135deg,var(--bronze),#e0a060);border-radius:14px;padding:18px 24px;text-align:center;">'
-            + '<div style="font-size:26px;margin-bottom:2px;">🥉</div>'
-            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:1px;">3rd Place</div>'
+            + (third
+                ? '<div style="font-size:22px;margin-bottom:2px;">🥉</div>'
+                  + '<div style="font-weight:800;font-size:13px;color:white;">' + third.player + '</div>'
+                : '<div style="font-size:26px;margin-bottom:2px;">🥉</div>'
+                  + '<div style="font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:1px;">3rd Place</div>')
           + '</div>'
         + '</div>'
         + '<div></div>'
@@ -944,16 +1014,21 @@ function renderPlayoffs() {
       + '<div style="font-family:Barlow Condensed,sans-serif;font-size:16px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">🏅 Final Standings</div>'
       + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">'
         + [
-            {place:'Champion',emoji:'🥇',bg:'linear-gradient(135deg,var(--gold),#ffb300)',col:'#5a3e00'},
-            {place:'Runner-up',emoji:'🥈',bg:'linear-gradient(135deg,var(--silver),#90a4ae)',col:'#2d3748'},
-            {place:'3rd Place',emoji:'🥉',bg:'linear-gradient(135deg,var(--bronze),#e0a060)',col:'white'},
-            {place:'4th Place',emoji:'4️⃣',bg:'var(--bg)',col:'var(--text)',border:true},
-          ].map(s =>
-            '<div style="border:1.5px dashed var(--border);border-radius:12px;padding:14px;text-align:center;background:var(--bg);">'
-            + '<div style="font-size:22px;margin-bottom:4px;opacity:0.4;">' + s.emoji + '</div>'
-            + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">' + s.place + '</div>'
-            + '<div style="font-size:11px;color:var(--text-muted);font-style:italic;">To be determined</div>'
-            + '</div>'
+            {place:'Champion',emoji:'🥇',bg:'linear-gradient(135deg,var(--gold),#ffb300)',col:'#5a3e00',p:champ},
+            {place:'Runner-up',emoji:'🥈',bg:'linear-gradient(135deg,var(--silver),#90a4ae)',col:'#2d3748',p:runnerUp},
+            {place:'3rd Place',emoji:'🥉',bg:'linear-gradient(135deg,var(--bronze),#e0a060)',col:'white',p:third},
+            {place:'4th Place',emoji:'4️⃣',bg:'var(--bg)',col:'var(--text)',border:true,p:fourth},
+          ].map(s => s.p
+            ? '<div style="border-radius:12px;padding:14px;text-align:center;background:' + s.bg + ';">'
+              + '<div style="font-size:22px;margin-bottom:4px;">' + s.emoji + '</div>'
+              + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:' + s.col + ';opacity:0.85;margin-bottom:4px;">' + s.place + '</div>'
+              + '<div style="font-size:13px;font-weight:700;color:' + s.col + ';">' + s.p.player + '</div>'
+              + '</div>'
+            : '<div style="border:1.5px dashed var(--border);border-radius:12px;padding:14px;text-align:center;background:var(--bg);">'
+              + '<div style="font-size:22px;margin-bottom:4px;opacity:0.4;">' + s.emoji + '</div>'
+              + '<div style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">' + s.place + '</div>'
+              + '<div style="font-size:11px;color:var(--text-muted);font-style:italic;">To be determined</div>'
+              + '</div>'
           ).join('')
       + '</div>'
     + '</div>'
@@ -1004,9 +1079,13 @@ async function init() {
     EXTRAS.push({ code: 'SP', type: 'BADGE', name: 'Spotless', description: 'Completed the season with zero penalties — earns +1 bonus point' });
   }
 
-  const fixtures = fixtureRows
+  const PLAYOFF_ROUND_RE = /^(QF\d*|SF\d*|SFL|F)(-\d+)?$/;
+  const allLeagueRows = fixtureRows
     .filter(r => r['player A'] && r['player B'] && r['tournament'] === 'LEAGUE 2026')
     .map(rowToFixture);
+
+  const fixtures = allLeagueRows.filter(f => !PLAYOFF_ROUND_RE.test(f.round));
+  const playoffFixtures = allLeagueRows.filter(f => PLAYOFF_ROUND_RE.test(f.round));
 
   const unplayed = fixtures.filter(f => f.scoreA === null || f.scoreA === undefined || f.scoreA === '');
   curFixMonth = unplayed.length > 0 ? unplayed[0].month2 : (fixtures.length > 0 ? fixtures[fixtures.length-1].month2 : '');
@@ -1014,6 +1093,7 @@ async function init() {
   APP.stats = computeStats(fixtures);
   APP.monthly = computeMonthly(fixtures);
   APP.fixtures = fixtures;
+  APP.playoffFixtures = playoffFixtures;
 
   renderHome();
   renderRankings();
