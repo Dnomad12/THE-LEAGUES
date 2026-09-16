@@ -1560,5 +1560,109 @@
     "source_image": "IMG_6285.JPG",
     "source_hash": "207e7efed879fb456e3f1420fef0c5f2e5abe14ad3c615d57329352cd1b88f31",
     "processed_at": "2026-09-16T06:30:34.950536+00:00"
+  },
+  {
+    "game_type": "Random Cricket",
+    "target_numbers": [
+      20,
+      19,
+      18,
+      16,
+      11,
+      4,
+      2
+    ],
+    "raw_date": "15.09.26",
+    "date": "2026-09-15",
+    "time": "17:56",
+    "duration_minutes": 10,
+    "duration_seconds": 40,
+    "players": [
+      "DNOMAD12",
+      "THOROU"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "DNOMAD12": {
+        "mpr": 1.2,
+        "first9_mpr": 2.0,
+        "darts_thrown": 60,
+        "score": 60,
+        "marks_5": 0,
+        "marks_6": 0,
+        "marks_7": 0,
+        "marks_8": 0,
+        "marks_9": 0,
+        "white_horse": 0
+      },
+      "THOROU": {
+        "mpr": 1.32,
+        "first9_mpr": 0.0,
+        "darts_thrown": 57,
+        "score": 26,
+        "marks_5": 0,
+        "marks_6": 0,
+        "marks_7": 0,
+        "marks_8": 0,
+        "marks_9": 0,
+        "white_horse": 0
+      }
+    },
+    "match_id": "2026-09-15_17-56_img_6282",
+    "source_image": "IMG_6282.JPG",
+    "source_hash": "0985960f1c87225dcf3b853e8ba8906d3201d82f5caff5cb261312f682152a45",
+    "processed_at": "2026-09-16T17:23:10.708095+00:00"
+  },
+  {
+    "game_type": "Random Cricket",
+    "target_numbers": [
+      20,
+      19,
+      18,
+      16,
+      11,
+      4,
+      2
+    ],
+    "raw_date": "15.09.26",
+    "date": "2026-09-15",
+    "time": "18:05",
+    "duration_minutes": 8,
+    "duration_seconds": 36,
+    "players": [
+      "THOROU",
+      "DNOMAD12"
+    ],
+    "winner": "DNOMAD12",
+    "leg_stats": {
+      "THOROU": {
+        "mpr": 1.11,
+        "first9_mpr": 2.0,
+        "darts_thrown": 57,
+        "score": 28,
+        "marks_5": 0,
+        "marks_6": 0,
+        "marks_7": 0,
+        "marks_8": 0,
+        "marks_9": 0,
+        "white_horse": 0
+      },
+      "DNOMAD12": {
+        "mpr": 1.53,
+        "first9_mpr": 1.0,
+        "darts_thrown": 55,
+        "score": 119,
+        "marks_5": 0,
+        "marks_6": 0,
+        "marks_7": 0,
+        "marks_8": 0,
+        "marks_9": 0,
+        "white_horse": 0
+      }
+    },
+    "match_id": "2026-09-15_18-05_img_6283",
+    "source_image": "IMG_6283.JPG",
+    "source_hash": "25c71fd304641fd7842e5080839836849668e91bd1bf456cb24faf58b65b9c41",
+    "processed_at": "2026-09-16T17:25:16.880255+00:00"
   }
 ]
