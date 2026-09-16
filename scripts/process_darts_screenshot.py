@@ -30,9 +30,13 @@ IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 
 MODEL = "claude-sonnet-5"
 
-SCHEMA_PROMPT = """You are extracting structured data from a screenshot of a darts scoreboard app (a completed 501-style leg).
+SCHEMA_PROMPT = """You are extracting structured data from a screenshot of a darts scoreboard app. The leg shown is either a game of "501" or a game of "Cricket" (which may be labelled e.g. "Random Cricket") -- look at the header to see which one it is, then follow the matching schema below exactly. Only ever output ONE of the two shapes, matching whichever game is actually shown.
 
-Return ONLY valid JSON (no markdown code fences, no commentary, no explanation) matching exactly this structure:
+Return ONLY valid JSON (no markdown code fences, no commentary, no explanation).
+
+=========================================================
+IF THE HEADER SHOWS "501":
+=========================================================
 
 {
   "match": {
@@ -86,12 +90,74 @@ Return ONLY valid JSON (no markdown code fences, no commentary, no explanation) 
   ]
 }
 
-Rules:
+Rules for 501:
 - Use player names exactly as shown in the header row of the stats table (same capitalization).
 - Parse dart notation exactly: "T20" = base 20, multiplier 3. "D4" = base 4, multiplier 2. "17" (plain number) = base 17, multiplier 1. "25" = single bull, base 25 multiplier 1. "D25" = double bull, base 25 multiplier 2 (value 50). There is no triple bull.
 - A "-" that appears while the player's turn is still ongoing (i.e. there are more real dart values shown later in that same turn) is a genuine miss: is_miss=true, base=null, multiplier=null, value=0.
 - A "-" that appears after the player's turn has effectively already ended -- either because an earlier dart that turn reached exactly 0 (checkout), or because an earlier dart that turn caused a bust (going below zero, or leaving exactly 1) -- is not_thrown=true instead, since darts are never thrown after a turn ends: base=null, multiplier=null, value=null, is_miss=false.
 - Parse combined fields like "14.29% (1/7)" into checkout_pct=14.29, checkout_makes=1, checkout_attempts=7.
+
+=========================================================
+IF THE HEADER SHOWS "CRICKET" (any variant, e.g. "Random Cricket"):
+=========================================================
+
+{
+  "match": {
+    "game_type": "<the exact game name shown, e.g. 'Random Cricket'>",
+    "target_numbers": [<the specific numbers in play this leg, as a list of integers, in the order shown in the header, e.g. [20,19,18,16,11,4,2]; use 25 for the bull if it's one of them>],
+    "raw_date": "<the date exactly as shown, e.g. '15.09.26'>",
+    "date": "<ISO date YYYY-MM-DD -- the date shown is in DD.MM.YY format, convert it>",
+    "time": "<time as shown, e.g. '18:05'>",
+    "duration_minutes": <integer minutes from the duration field>,
+    "duration_seconds": <integer seconds from the duration field, 0 if none shown>,
+    "players": ["<player name 1>", "<player name 2>", "..."],
+    "winner": "<name of whichever player has the strictly higher final SCORE shown in the leg stats table, or null if scores are tied>",
+    "leg_stats": {
+      "<player name>": {
+        "mpr": <float, "MPR" row>,
+        "first9_mpr": <float, "FIRST 9 MPR" row>,
+        "darts_thrown": <integer>,
+        "score": <integer, final total points scored, the "SCORE" row>,
+        "marks_5": <integer, "5 MARKS" row -- number of turns this leg where the player scored exactly 5 total marks>,
+        "marks_6": <integer, "6 MARKS" row>,
+        "marks_7": <integer, "7 MARKS" row>,
+        "marks_8": <integer, "8 MARKS" row>,
+        "marks_9": <integer, "9 MARKS" row>,
+        "white_horse": <integer, "WHITE HORSE" row -- number of turns this leg where the player hit three triples>
+      }
+      /* one entry per player, using the exact player names from "players" */
+    }
+  },
+  "throws": [
+    {
+      "round": <integer round number>,
+      "player": "<player name, exactly as in "players">",
+      "throw_number": <integer 1, 2, or 3>,
+      "base": <the target number this dart hit (must be one of "target_numbers" above, or 25 for bull), or null if this dart shows the miss symbol "—">,
+      "multiplier": <integer 1 (single), 2 (double), or 3 (triple); for the bull only 1 or 2 is valid; null if this dart shows the miss symbol "—">,
+      "marks": <integer, the number of marks this dart contributes: equal to the multiplier if a target number was hit (1/2/3), or 0 if it shows the miss symbol "—">,
+      "is_miss": <true if this dart shows the miss symbol "—" (did not hit any target number), otherwise false>,
+      "is_score": <true if this dart shows the scoring symbol (an X / crossed-circle mark, as opposed to a plain diagonal slash), meaning this dart both marked and scored points against the opponent; otherwise false>,
+      "round_score": <integer, the larger cumulative running total number shown at the top of this player's cell for this round>,
+      "round_gain": <integer, the smaller number shown just below it -- the points gained in this specific round; 0 if none>
+    }
+    /* One entry per dart per player per round -- a normal round contributes 3 throw entries per player.
+       Each cell shows exactly 3 dart results (one of: a dash "—" for a miss, a diagonal slash "/" for a
+       mark that doesn't score, or a crossed/circled mark for a dart that scores), each paired with the
+       number hit (or "-" for the miss case). Skip a player entirely for a round only if they have no
+       cell at all for that round. */
+  ]
+}
+
+Rules for Cricket:
+- Use player names exactly as shown in the header row of the leg stats table (same capitalization).
+- Parse dart notation exactly like 501: "T20" = base 20, multiplier 3, marks 3. "D4" = base 4, multiplier 2, marks 2. A plain number like "18" = base 18, multiplier 1, marks 1.
+- Distinguish the three symbols shown next to each dart value precisely: a dash "—" means a miss (is_miss=true, base=null, multiplier=null, marks=0). A diagonal slash "/" means a mark that does not score (is_miss=false, is_score=false). A crossed/circled symbol (X-like or a circle with a line through it) means this dart scores (is_miss=false, is_score=true).
+- Do not try to independently compute whether a number is "closed" or infer scoring from game logic -- just transcribe exactly which of the three symbols is shown for each individual dart, and the base/multiplier of the number next to it.
+
+=========================================================
+GENERAL RULES (both game types):
+=========================================================
 - Use JSON null (not the string "-") for any value that is genuinely unavailable.
 - Do not guess or invent numbers. If a value is unreadable, use null.
 - Output raw JSON only. The response must start with { and end with }.
