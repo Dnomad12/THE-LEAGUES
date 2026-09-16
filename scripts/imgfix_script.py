@@ -294,7 +294,7 @@ def file_hash(path: Path) -> str:
 
 
 def main():
-    print("SCRIPT VERSION: 2026-09-02-v5 (streaming API calls for large max_tokens)")
+    print("SCRIPT VERSION: 2026-09-16-v6 (auto-resize oversized images + Cricket schema)")
     print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
