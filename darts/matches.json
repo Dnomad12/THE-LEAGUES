@@ -1468,5 +1468,97 @@
     "source_image": "IMG_5957.JPG",
     "source_hash": "64cd25cb6fb6c95550f86cf2d42d830cf7a29ca619ddaf44584385315e1f0a64",
     "processed_at": "2026-09-03T06:43:56.155296+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "15.09.26",
+    "date": "2026-09-15",
+    "time": "17:34",
+    "duration_minutes": 7,
+    "duration_seconds": 4,
+    "players": [
+      "DNOMAD12",
+      "THOROU"
+    ],
+    "winner": "THOROU",
+    "leg_stats": {
+      "DNOMAD12": {
+        "ppr": 32.92,
+        "first9_ppr": 28.33,
+        "darts_thrown": 39,
+        "checkout_pct": null,
+        "checkout_attempts": null,
+        "checkout_makes": null,
+        "checkout_points": null,
+        "60_plus": 0,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "THOROU": {
+        "ppr": 38.54,
+        "first9_ppr": 65.0,
+        "darts_thrown": 39,
+        "checkout_pct": 100,
+        "checkout_attempts": 1,
+        "checkout_makes": 1,
+        "checkout_points": 55,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-09-15_17-34_img_6284",
+    "source_image": "IMG_6284.JPG",
+    "source_hash": "d838e86f83d62967e4835853f03d76da857a488dafa8f90c557378b536ca6a4a",
+    "processed_at": "2026-09-16T06:29:12.103636+00:00"
+  },
+  {
+    "game_type": "501",
+    "checkout_rule": "Straight In / Straight Out",
+    "raw_date": "15.09.26",
+    "date": "2026-09-15",
+    "time": "17:44",
+    "duration_minutes": 8,
+    "duration_seconds": 44,
+    "players": [
+      "THOROU",
+      "DNOMAD12"
+    ],
+    "winner": "THOROU",
+    "leg_stats": {
+      "THOROU": {
+        "ppr": 31.31,
+        "first9_ppr": 27.67,
+        "darts_thrown": 48,
+        "checkout_pct": 16.67,
+        "checkout_attempts": 6,
+        "checkout_makes": 1,
+        "checkout_points": 30,
+        "60_plus": 2,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      },
+      "DNOMAD12": {
+        "ppr": 32.93,
+        "first9_ppr": 36.0,
+        "darts_thrown": 45,
+        "checkout_pct": 0,
+        "checkout_attempts": 5,
+        "checkout_makes": 0,
+        "checkout_points": null,
+        "60_plus": 1,
+        "100_plus": 0,
+        "140_plus": 0,
+        "180": 0
+      }
+    },
+    "match_id": "2026-09-15_17-44_img_6285",
+    "source_image": "IMG_6285.JPG",
+    "source_hash": "207e7efed879fb456e3f1420fef0c5f2e5abe14ad3c615d57329352cd1b88f31",
+    "processed_at": "2026-09-16T06:30:34.950536+00:00"
   }
 ]
