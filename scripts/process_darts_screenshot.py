@@ -153,9 +153,11 @@ IF THE HEADER SHOWS "CRICKET" (any variant, e.g. "Random Cricket"):
 
 Rules for Cricket:
 - Use player names exactly as shown in the header row of the leg stats table (same capitalization).
-- Parse dart notation exactly like 501: "T20" = base 20, multiplier 3, marks 3. "D4" = base 4, multiplier 2, marks 2. A plain number like "18" = base 18, multiplier 1, marks 1.
-- Distinguish the three symbols shown next to each dart value precisely: a dash "—" means a miss (is_miss=true, base=null, multiplier=null, marks=0). A diagonal slash "/" means a mark that does not score (is_miss=false, is_score=false). A crossed/circled symbol (X-like or a circle with a line through it) means this dart scores (is_miss=false, is_score=true).
-- Do not try to independently compute whether a number is "closed" or infer scoring from game logic -- just transcribe exactly which of the three symbols is shown for each individual dart, and the base/multiplier of the number next to it.
+- Parse dart notation exactly like 501: "T20" = base 20, multiplier 3. "D4" = base 4, multiplier 2. A plain number like "18" = base 18, multiplier 1.
+- Distinguish the three symbols shown next to each dart value precisely: a dash "—" means a genuine miss (is_miss=true, base=null, multiplier=null, marks=0, is_score=false). A diagonal slash "/" means the dart hit a real number but did not score (is_miss=false, is_score=false). A crossed/circled symbol (X-like or a circle with a line through it) means this dart scored (is_miss=false, is_score=true).
+- Transcribe base/multiplier for EVERY dart that hit a real number on the board, even if that number is not one of this leg's "target_numbers" -- a player can physically hit any number, whether or not it's in play this leg. Never null out base/multiplier just because the number isn't a target.
+- However, "marks" and "is_score" depend on whether the number is actually in play: if base is NOT one of this leg's "target_numbers", set marks=0 and is_score=false regardless of which symbol was shown, since cricket rules make it impossible to mark or score on a number that isn't a target this leg. Only when base IS one of the target_numbers should marks equal the multiplier (1/2/3) and should is_score be allowed to be true.
+- Do not try to independently compute whether a number is "closed" or infer scoring from full game logic -- just transcribe exactly which symbol is shown for each dart and the number it hit, then apply the target_numbers check above for marks/is_score.
 
 =========================================================
 GENERAL RULES (both game types):
@@ -294,7 +296,7 @@ def file_hash(path: Path) -> str:
 
 
 def main():
-    print("SCRIPT VERSION: 2026-09-16-v6 (auto-resize oversized images + Cricket schema)")
+    print("SCRIPT VERSION: 2026-09-16-v7 (fix Cricket off-target marks/scoring)")
     print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
