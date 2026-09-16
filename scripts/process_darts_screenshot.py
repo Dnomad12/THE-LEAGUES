@@ -15,10 +15,12 @@ import base64
 import hashlib
 import re
 import time
+import io
 from pathlib import Path
 from datetime import datetime, timezone
 
 import anthropic
+from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 INCOMING_DIR = REPO_ROOT / "darts" / "incoming"
@@ -164,6 +166,9 @@ GENERAL RULES (both game types):
 """
 
 
+MAX_IMAGE_DIMENSION = 7900  # a safety margin under the API's hard 8000px limit
+
+
 def image_to_base64(path: Path):
     data = path.read_bytes()
     media_type = {
@@ -172,6 +177,23 @@ def image_to_base64(path: Path):
         ".jpeg": "image/jpeg",
         ".webp": "image/webp",
     }[path.suffix.lower()]
+
+    with Image.open(io.BytesIO(data)) as img:
+        width, height = img.size
+
+    if width > MAX_IMAGE_DIMENSION or height > MAX_IMAGE_DIMENSION:
+        print(f"  Image is {width}x{height}, exceeds the API's 8000px limit -- resizing before upload.")
+        with Image.open(io.BytesIO(data)) as img:
+            img = img.convert("RGB")
+            scale = MAX_IMAGE_DIMENSION / max(width, height)
+            new_size = (max(1, int(width * scale)), max(1, int(height * scale)))
+            img = img.resize(new_size, Image.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=92)
+            data = buf.getvalue()
+            media_type = "image/jpeg"
+            print(f"  Resized to {new_size[0]}x{new_size[1]}.")
+
     return media_type, base64.standard_b64encode(data).decode("utf-8")
 
 
@@ -272,7 +294,7 @@ def file_hash(path: Path) -> str:
 
 
 def main():
-    print("SCRIPT VERSION: 2026-09-02-v5 (streaming API calls for large max_tokens)")
+    print("SCRIPT VERSION: 2026-09-16-v6 (auto-resize oversized images + Cricket schema)")
     print(f"anthropic SDK version: {getattr(anthropic, '__version__', 'unknown')}")
 
     api_key = os.environ.get("ANTHROPIC_API_KEY")
