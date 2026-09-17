@@ -52,6 +52,15 @@
     height: 64px;
     gap: 16px;
     flex-wrap: wrap;
+    position: relative;
+  }
+  @media (min-width: 1050px) {
+    .header-inner > .nav {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: max-content;
+    }
   }
   .brand { display: flex; align-items: center; gap: 12px; color: var(--board); text-decoration: none; }
   .brand-mark { width: 34px; height: 34px; flex-shrink: 0; }
@@ -122,6 +131,16 @@
   .achieve-card .value { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 20px; color: var(--dartred); }
   .achieve-card .label { font-size: 11.5px; color: var(--board-soft); margin-top: 2px; }
   .achieve-card .who { font-weight: 700; margin-top: 5px; font-size: 14px; }
+
+  /* ---------- Game-type toggle & badges ---------- */
+  .game-toggle { display: inline-flex; background: var(--line); border-radius: 8px; padding: 3px; margin-bottom: 18px; gap: 2px; }
+  .game-toggle-btn { background: none; border: none; padding: 8px 18px; border-radius: 6px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.6px; text-transform: uppercase; color: var(--board-soft); cursor: pointer; transition: all .15s; }
+  .game-toggle-btn.active { background: var(--dartred); color: white; }
+  .game-badge { display: inline-block; font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .game-badge.is501 { background: var(--dartred-soft); color: var(--dartred); }
+  .game-badge.iscricket { background: var(--dartgreen-soft); color: var(--dartgreen); }
+  .subblock-title { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--board-soft); margin: 22px 0 10px; padding-top: 4px; border-top: 1px dashed var(--line); }
+  .subblock-title:first-child { border-top: none; padding-top: 0; margin-top: 0; }
 
   .fun-fact {
     background: var(--dartgreen-soft);
@@ -321,6 +340,7 @@
     <h2>Hall of fame</h2>
     <p>The best individual moments recorded so far -- new records get crowned here as matches come in.</p>
   </div>
+  <div id="home-game-toggle"></div>
   <div class="stat-row achieve-grid" id="home-achievements"></div>
 
   <div class="fun-fact" id="home-fun-fact" style="display:none;">
@@ -335,6 +355,7 @@
     <h2>Rankings</h2>
     <p>Season averages across every recorded leg. Click a column to sort.</p>
   </div>
+  <div id="rankings-game-toggle"></div>
   <div class="card" id="rankings-wrap"></div>
 </section>
 
@@ -375,7 +396,15 @@ function dn(name) {
   return ALIASES[name.toUpperCase()] || name;
 }
 
-let STATE = { matches: [], throws: [], players: {}, byMatch: {}, selectedPlayer: null };
+let STATE = { matches: [], throws: [], players: {}, playersCricket: {}, byMatch: {}, selectedPlayer: null, activeGameType: '501' };
+
+function setGameType(type) {
+  STATE.activeGameType = type;
+  document.querySelectorAll('.game-toggle-btn').forEach(b => b.classList.toggle('active', b.dataset.gtype === type));
+  renderHome();
+  renderRankings();
+  renderStats();
+}
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -438,7 +467,11 @@ function fmtDate(iso) {
 }
 
 function fmt1(n) { return (n === null || n === undefined) ? '—' : n.toFixed(1); }
+function fmt2(n) { return (n === null || n === undefined) ? '—' : n.toFixed(2); }
 function fmtPct(n) { return (n === null || n === undefined) ? '—' : n.toFixed(1) + '%'; }
+
+function is501(m) { return ((m && m.game_type) || '501').trim().toUpperCase() === '501'; }
+function gameLabel(m) { return is501(m) ? '501' : (m.game_type || 'Cricket'); }
 
 // ---------- Aggregation ----------
 function aggregate(matches, throws) {
@@ -538,6 +571,67 @@ function aggregate(matches, throws) {
   return { players, byMatch };
 }
 
+function aggregateCricket(matches, throws) {
+  const players = {};
+
+  matches.forEach(m => {
+    (m.players || []).forEach(p => {
+      if (!players[p]) {
+        players[p] = {
+          name: p, matches: 0, wins: 0, losses: 0,
+          mpr_sum: 0, mpr_count: 0, first9_sum: 0, first9_count: 0,
+          darts_thrown: 0, score_sum: 0,
+          marks5: 0, marks6: 0, marks7: 0, marks8: 0, marks9: 0, white_horse: 0,
+          match_ids: [], _throws: []
+        };
+      }
+      const st = players[p];
+      st.matches++;
+      st.match_ids.push(m.match_id);
+      if (m.winner === p) st.wins++; else st.losses++;
+      const ls = (m.leg_stats || {})[p];
+      if (ls) {
+        if (ls.mpr != null) { st.mpr_sum += ls.mpr; st.mpr_count++; }
+        if (ls.first9_mpr != null) { st.first9_sum += ls.first9_mpr; st.first9_count++; }
+        st.darts_thrown += ls.darts_thrown || 0;
+        st.score_sum += ls.score || 0;
+        st.marks5 += ls.marks_5 || 0;
+        st.marks6 += ls.marks_6 || 0;
+        st.marks7 += ls.marks_7 || 0;
+        st.marks8 += ls.marks_8 || 0;
+        st.marks9 += ls.marks_9 || 0;
+        st.white_horse += ls.white_horse || 0;
+      }
+    });
+  });
+
+  throws.forEach(t => { if (players[t.player]) players[t.player]._throws.push(t); });
+
+  Object.values(players).forEach(st => {
+    const real = st._throws.filter(t => !t.is_miss && t.base !== null && t.base !== undefined);
+    st.real_throws = real.length;
+    st.misses = st._throws.filter(t => t.is_miss).length;
+    st.triples = real.filter(t => t.multiplier === 3).length;
+    st.doubles = real.filter(t => t.multiplier === 2).length;
+    st.singles = real.filter(t => t.multiplier === 1).length;
+    st.bulls = real.filter(t => t.base === 25).length;
+    st.scoring_darts = real.filter(t => t.is_score).length;
+    st.avg_mpr = st.mpr_count ? st.mpr_sum / st.mpr_count : null;
+    st.avg_first9 = st.first9_count ? st.first9_sum / st.first9_count : null;
+    st.avg_score = st.matches ? st.score_sum / st.matches : null;
+    st.big_turns = st.marks7 + st.marks8 + st.marks9;
+
+    st.number_counts = {};
+    for (let n = 1; n <= 20; n++) st.number_counts[n] = 0;
+    st.number_counts[25] = 0;
+    real.forEach(t => { if (st.number_counts[t.base] !== undefined) st.number_counts[t.base]++; });
+
+    delete st._throws;
+  });
+
+  return players;
+}
+
 function buildMatchRounds(matchThrows) {
   const rounds = {};
   matchThrows.forEach(t => {
@@ -560,31 +654,81 @@ function buildMatchRounds(matchThrows) {
   });
 }
 
+function formatDartCricket(t) {
+  if (t.is_miss) return '-';
+  const base = t.base === 25 ? 'B' : t.base;
+  const label = t.multiplier === 3 ? 'T' + base : t.multiplier === 2 ? 'D' + base : String(base);
+  return t.is_score ? label + '*' : label;
+}
+
+function buildMatchRoundsCricket(matchThrows) {
+  const rounds = {};
+  matchThrows.forEach(t => {
+    if (!rounds[t.round]) rounds[t.round] = {};
+    if (!rounds[t.round][t.player]) rounds[t.round][t.player] = [];
+    rounds[t.round][t.player].push(t);
+  });
+  return Object.keys(rounds).map(Number).sort((a, b) => a - b).map(rn => {
+    const cells = {};
+    Object.entries(rounds[rn]).forEach(([player, ts]) => {
+      ts.sort((a, b) => a.throw_number - b.throw_number);
+      cells[player] = {
+        darts: ts.map(formatDartCricket).join(' '),
+        round_score: ts[0].round_score,
+        round_gain: ts[0].round_gain
+      };
+    });
+    return { round: rn, cells };
+  });
+}
+
 // ---------- Renderers ----------
 function renderHome() {
-  const { matches, players } = STATE;
-  const totalDarts = Object.values(players).reduce((s, p) => s + p.real_throws, 0);
-  const totalTriples = Object.values(players).reduce((s, p) => s + p.triples, 0);
+  const { matches, players, playersCricket } = STATE;
+  const totalDarts = Object.values(players).reduce((s, p) => s + p.real_throws, 0) + Object.values(playersCricket).reduce((s, p) => s + p.real_throws, 0);
+  const totalTriples = Object.values(players).reduce((s, p) => s + p.triples, 0) + Object.values(playersCricket).reduce((s, p) => s + p.triples, 0);
+  const allPlayerNames = new Set([...Object.keys(players), ...Object.keys(playersCricket)]);
 
   document.getElementById('home-stat-row').innerHTML = `
     <div class="stat-box"><div class="num">${matches.length}</div><div class="label">Matches logged</div></div>
     <div class="stat-box"><div class="num">${totalDarts}</div><div class="label">Darts thrown</div></div>
     <div class="stat-box"><div class="num">${totalTriples}</div><div class="label">Triples hit</div></div>
-    <div class="stat-box"><div class="num">${Object.keys(players).length}</div><div class="label">Players</div></div>
+    <div class="stat-box"><div class="num">${allPlayerNames.size}</div><div class="label">Players</div></div>
   `;
 
-  document.getElementById('home-achievements').innerHTML = achievementCardsHTML(computeAchievements(matches, players));
+  const gt = STATE.activeGameType;
+  const toggleHTML = `
+    <div class="game-toggle">
+      <button class="game-toggle-btn ${gt === '501' ? 'active' : ''}" data-gtype="501" onclick="setGameType('501')">501</button>
+      <button class="game-toggle-btn ${gt === 'cricket' ? 'active' : ''}" data-gtype="cricket" onclick="setGameType('cricket')">Cricket</button>
+    </div>
+  `;
+  document.getElementById('home-game-toggle').innerHTML = toggleHTML;
 
-  const real = STATE.throws.filter(t => !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined);
-  if (real.length) {
+  const matches501 = matches.filter(is501);
+  const matchesCricket = matches.filter(m => !is501(m));
+
+  if (gt === '501') {
+    document.getElementById('home-achievements').innerHTML = achievementCardsHTML(computeAchievements(matches501, players));
+  } else {
+    document.getElementById('home-achievements').innerHTML = achievementCardsHTML(computeCricketAchievements(matchesCricket, playersCricket));
+  }
+
+  const relevantThrows = gt === '501'
+    ? STATE.throws.filter(t => matches501.some(m => m.match_id === t.match_id) && !t.is_miss && !t.not_thrown && t.value !== null && t.value !== undefined)
+    : STATE.throws.filter(t => matchesCricket.some(m => m.match_id === t.match_id) && !t.is_miss);
+
+  if (relevantThrows.length) {
     const counts = {};
-    real.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
+    relevantThrows.forEach(t => { counts[t.base] = (counts[t.base] || 0) + 1; });
     let favBase = null, favCount = 0;
     Object.entries(counts).forEach(([k, v]) => { if (v > favCount) { favCount = v; favBase = k; } });
     document.getElementById('home-fun-fact').style.display = 'flex';
     document.getElementById('home-fun-fact-icon').innerHTML = icon('bull', '#1f5c46', 26);
     document.getElementById('home-fun-fact-text').innerHTML =
-      `The league's favorite number so far is <strong>${favBase}</strong> -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every leg.`;
+      `The league's favorite number so far is <strong>${favBase}</strong> -- hit ${favCount} time${favCount === 1 ? '' : 's'} across every ${gt === '501' ? '501 leg' : 'Cricket leg'}.`;
+  } else {
+    document.getElementById('home-fun-fact').style.display = 'none';
   }
 }
 
@@ -626,6 +770,44 @@ function computeAchievements(matches, players) {
   return achievements;
 }
 
+function computeCricketAchievements(matches, players) {
+  const achievements = [];
+
+  let bestScore = null;
+  matches.forEach(m => {
+    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+      if (ls.score != null && (!bestScore || ls.score > bestScore.value)) {
+        bestScore = { who: p, value: ls.score, detail: fmtDate(m.date) };
+      }
+    });
+  });
+  if (bestScore) achievements.push({ icon: icon('peak', '#a4243b', 26), label: 'Highest single-leg score', value: bestScore.value, who: bestScore.who, detail: bestScore.detail });
+
+  let bestMprLeg = null;
+  matches.forEach(m => {
+    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+      if (ls.mpr != null && (!bestMprLeg || ls.mpr > bestMprLeg.value)) {
+        bestMprLeg = { who: p, value: ls.mpr, detail: fmtDate(m.date) };
+      }
+    });
+  });
+  if (bestMprLeg) achievements.push({ icon: icon('consistency', '#a4243b', 26), label: 'Best single-leg MPR', value: bestMprLeg.value.toFixed(2), who: bestMprLeg.who, detail: bestMprLeg.detail });
+
+  const bySeasonMpr = Object.values(players).filter(p => p.avg_mpr != null).sort((a, b) => b.avg_mpr - a.avg_mpr)[0];
+  if (bySeasonMpr) achievements.push({ icon: icon('consistency', '#1f5c46', 26), label: 'Best average MPR', value: bySeasonMpr.avg_mpr.toFixed(2), who: bySeasonMpr.name, detail: bySeasonMpr.matches + ' leg' + (bySeasonMpr.matches === 1 ? '' : 's') + ' played' });
+
+  const byWhiteHorse = Object.values(players).filter(p => p.white_horse > 0).sort((a, b) => b.white_horse - a.white_horse)[0];
+  if (byWhiteHorse) achievements.push({ icon: icon('triples', '#a4243b', 26), label: 'Most White Horses', value: byWhiteHorse.white_horse, who: byWhiteHorse.name, detail: 'career total (3 triples in one turn)' });
+
+  const byBigTurns = Object.values(players).filter(p => p.big_turns > 0).sort((a, b) => b.big_turns - a.big_turns)[0];
+  if (byBigTurns) achievements.push({ icon: icon('maxscore', '#b08a3e', 26), label: 'Most 7+ mark turns', value: byBigTurns.big_turns, who: byBigTurns.name, detail: 'career total' });
+
+  const byMatches = [...Object.values(players)].sort((a, b) => b.matches - a.matches)[0];
+  if (byMatches) achievements.push({ icon: icon('matches', '#a4243b', 26), label: 'Most matches played', value: byMatches.matches, who: byMatches.name, detail: 'Cricket legs' });
+
+  return achievements;
+}
+
 function achievementCardsHTML(achievements) {
   if (!achievements.length) return '<div class="card empty-note">Not enough matches yet to crown any achievements.</div>';
   return achievements.map(a => `
@@ -644,12 +826,14 @@ function achievementCardsHTML(achievements) {
 function matchCardHTML(m, expanded, uidPrefix) {
   const uid = uidPrefix + '-' + m.match_id;
   const playersStr = m.players.map(p => p === m.winner ? `<span class="winner">${dn(p)}</span>` : dn(p)).join(' vs ');
+  const badge = `<span class="game-badge ${is501(m) ? 'is501' : 'iscricket'}">${gameLabel(m)}</span>`;
+  const metaExtra = is501(m) ? (m.checkout_rule || '') : ((m.target_numbers || []).map(n => n === 25 ? 'Bull' : n).join(', '));
   return `
     <div class="match-card">
       <div class="match-top" onclick="toggleMatch('${uid}')">
         <div>
-          <div class="match-players">${playersStr}</div>
-          <div class="match-meta">${fmtDate(m.date)} · ${m.time || ''} · ${m.game_type || '501'} · ${m.checkout_rule || ''}</div>
+          <div class="match-players">${playersStr}${badge}</div>
+          <div class="match-meta">${fmtDate(m.date)} · ${m.time || ''}${metaExtra ? ' · ' + metaExtra : ''}</div>
         </div>
         <div class="match-toggle" id="toggle-${uid}">${expanded ? 'Hide details' : 'Show details'}</div>
       </div>
@@ -661,6 +845,7 @@ function matchCardHTML(m, expanded, uidPrefix) {
 }
 
 function matchDetailHTML(m) {
+  if (!is501(m)) return matchDetailHTMLCricket(m);
   const mThrows = STATE.byMatch[m.match_id] || [];
   const rounds = buildMatchRounds(mThrows);
   const legStatRows = Object.entries(m.leg_stats || {}).map(([p, ls]) => `
@@ -713,6 +898,62 @@ function matchDetailHTML(m) {
   `;
 }
 
+function matchDetailHTMLCricket(m) {
+  const mThrows = STATE.byMatch[m.match_id] || [];
+  const rounds = buildMatchRoundsCricket(mThrows);
+  const legStatRows = Object.entries(m.leg_stats || {}).map(([p, ls]) => `
+    <tr>
+      <td class="player-name card-title">${dn(p)}</td>
+      <td class="num" data-label="MPR">${fmt2(ls.mpr)}</td>
+      <td class="num" data-label="1st 9 MPR">${fmt2(ls.first9_mpr)}</td>
+      <td class="num" data-label="Darts">${ls.darts_thrown ?? '—'}</td>
+      <td class="num" data-label="Score">${ls.score ?? '—'}</td>
+      <td class="num" data-label="5 Marks">${ls.marks_5 ?? 0}</td>
+      <td class="num" data-label="6 Marks">${ls.marks_6 ?? 0}</td>
+      <td class="num" data-label="7 Marks">${ls.marks_7 ?? 0}</td>
+      <td class="num" data-label="8 Marks">${ls.marks_8 ?? 0}</td>
+      <td class="num" data-label="9 Marks">${ls.marks_9 ?? 0}</td>
+      <td class="num" data-label="White Horse">${ls.white_horse ?? 0}</td>
+    </tr>
+  `).join('');
+
+  const roundRows = rounds.map(r => {
+    const cells = m.players.map(p => {
+      const c = r.cells[p];
+      if (!c) return '<td>—</td>';
+      return `<td>
+        <div class="figure" style="font-weight:700;">${c.round_score ?? '—'}</div>
+        <div style="font-size:11.5px;color:var(--board-soft);">${c.darts}</div>
+        ${c.round_gain ? `<div class="figure" style="font-size:11px;color:var(--dartgreen);">+${c.round_gain}</div>` : ''}
+      </td>`;
+    }).join('');
+    return `<tr><td class="num">${r.round}</td>${cells}</tr>`;
+  }).join('');
+
+  const targets = (m.target_numbers || []).map(n => n === 25 ? 'Bull' : n).join(', ');
+
+  return `
+    <div class="scroll-fade-wrap" style="margin-bottom:16px;">
+      <div style="overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Player</th><th class="num">MPR</th><th class="num">1st 9 MPR</th><th class="num">Darts</th><th class="num">Score</th><th class="num">5M</th><th class="num">6M</th><th class="num">7M</th><th class="num">8M</th><th class="num">9M</th><th class="num">WH</th></tr></thead>
+          <tbody>${legStatRows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="font-size:12px; color:var(--board-soft); margin-bottom:12px;">Target numbers this leg: <strong>${targets}</strong> · darts marked with * scored points</div>
+    <div class="mobile-hint">Swipe to see all rounds →</div>
+    <div class="scroll-fade-wrap">
+      <div class="round-table-wrap">
+        <table>
+          <thead><tr><th class="num">Rd</th>${m.players.map(p => `<th>${dn(p)}</th>`).join('')}</tr></thead>
+          <tbody>${roundRows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function toggleMatch(uid) {
   const detail = document.getElementById('detail-' + uid);
   const toggle = document.getElementById('toggle-' + uid);
@@ -721,9 +962,21 @@ function toggleMatch(uid) {
   if (toggle) toggle.textContent = open ? 'Hide details' : 'Show details';
 }
 
-let rankingsSort = { key: 'avg_ppr', dir: -1 };
+let rankingsSort501 = { key: 'avg_ppr', dir: -1 };
+let rankingsSortCricket = { key: 'avg_mpr', dir: -1 };
 
 function renderRankings() {
+  const gt = STATE.activeGameType;
+  document.getElementById('rankings-game-toggle').innerHTML = `
+    <div class="game-toggle">
+      <button class="game-toggle-btn ${gt === '501' ? 'active' : ''}" data-gtype="501" onclick="setGameType('501')">501</button>
+      <button class="game-toggle-btn ${gt === 'cricket' ? 'active' : ''}" data-gtype="cricket" onclick="setGameType('cricket')">Cricket</button>
+    </div>
+  `;
+  if (gt === '501') draw501Rankings(); else drawCricketRankings();
+}
+
+function draw501Rankings() {
   const rows = Object.values(STATE.players);
   const cols = [
     { key: 'name', label: 'Player' },
@@ -741,13 +994,13 @@ function renderRankings() {
 
   function draw() {
     const sorted = [...rows].sort((a, b) => {
-      const av = a[rankingsSort.key], bv = b[rankingsSort.key];
+      const av = a[rankingsSort501.key], bv = b[rankingsSort501.key];
       if (av == null) return 1;
       if (bv == null) return -1;
-      if (typeof av === 'string') return av.localeCompare(bv) * rankingsSort.dir;
-      return (av - bv) * rankingsSort.dir;
+      if (typeof av === 'string') return av.localeCompare(bv) * rankingsSort501.dir;
+      return (av - bv) * rankingsSort501.dir;
     });
-    const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSort.key === c.key ? (rankingsSort.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
+    const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSort501.key === c.key ? (rankingsSort501.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
     const body = sorted.map((r, i) => `
       <tr>
         <td class="card-title"><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${dn(r.name)}</span></td>
@@ -769,8 +1022,56 @@ function renderRankings() {
   }
 
   window.setSort = function (key) {
-    if (rankingsSort.key === key) rankingsSort.dir *= -1;
-    else { rankingsSort.key = key; rankingsSort.dir = -1; }
+    if (rankingsSort501.key === key) rankingsSort501.dir *= -1;
+    else { rankingsSort501.key = key; rankingsSort501.dir = -1; }
+    draw();
+  };
+
+  draw();
+}
+
+function drawCricketRankings() {
+  const rows = Object.values(STATE.playersCricket);
+  const cols = [
+    { key: 'name', label: 'Player' },
+    { key: 'matches', label: 'MP', num: true },
+    { key: 'wins', label: 'W-L', num: true },
+    { key: 'avg_mpr', label: 'Avg MPR', num: true },
+    { key: 'avg_first9', label: 'First 9 MPR', num: true },
+    { key: 'avg_score', label: 'Avg Score', num: true },
+    { key: 'white_horse', label: 'White Horse', num: true },
+    { key: 'big_turns', label: '7+ Marks', num: true },
+  ];
+
+  function draw() {
+    const sorted = [...rows].sort((a, b) => {
+      const av = a[rankingsSortCricket.key], bv = b[rankingsSortCricket.key];
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === 'string') return av.localeCompare(bv) * rankingsSortCricket.dir;
+      return (av - bv) * rankingsSortCricket.dir;
+    });
+    const head = cols.map(c => `<th class="${c.num ? 'num ' : ''}sortable" onclick="setSort('${c.key}')">${c.label}${rankingsSortCricket.key === c.key ? (rankingsSortCricket.dir === 1 ? ' ▲' : ' ▼') : ''}</th>`).join('');
+    const body = sorted.map((r, i) => `
+      <tr>
+        <td class="card-title"><span class="rank-pos ${i === 0 ? 'top' : ''}">${i + 1}</span> <span class="player-name">${dn(r.name)}</span></td>
+        <td class="num" data-label="MP">${r.matches}</td>
+        <td class="num" data-label="W-L">${r.wins}-${r.losses}</td>
+        <td class="num" data-label="Avg MPR">${fmt2(r.avg_mpr)}</td>
+        <td class="num" data-label="First 9 MPR">${fmt2(r.avg_first9)}</td>
+        <td class="num" data-label="Avg Score">${fmt1(r.avg_score)}</td>
+        <td class="num" data-label="White Horse">${r.white_horse}</td>
+        <td class="num" data-label="7+ Marks">${r.big_turns}</td>
+      </tr>
+    `).join('');
+    document.getElementById('rankings-wrap').innerHTML = rows.length
+      ? `<div style="overflow-x:auto;"><table class="responsive-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
+      : '<div class="empty-note">No Cricket matches recorded yet.</div>';
+  }
+
+  window.setSort = function (key) {
+    if (rankingsSortCricket.key === key) rankingsSortCricket.dir *= -1;
+    else { rankingsSortCricket.key = key; rankingsSortCricket.dir = -1; }
     draw();
   };
 
@@ -786,7 +1087,7 @@ function renderMatches() {
 }
 
 function renderPlayers() {
-  const names = Object.keys(STATE.players).sort();
+  const names = [...new Set([...Object.keys(STATE.players), ...Object.keys(STATE.playersCricket)])].sort();
   const picker = document.getElementById('player-picker');
   if (!names.length) {
     picker.innerHTML = '';
@@ -880,97 +1181,151 @@ function setTrendMetric(metric) {
 }
 
 function drawPlayerProfile() {
-  const p = STATE.players[STATE.selectedPlayer];
-  if (!p) return;
-  const accuracyTotal = p.singles + p.doubles + p.triples + p.misses;
-  const pct = n => accuracyTotal ? Math.round(n / accuracyTotal * 100) : 0;
+  const name = STATE.selectedPlayer;
+  const p = STATE.players[name];
+  const pc = STATE.playersCricket[name];
+  if (!p && !pc) return;
 
   const matchesForPlayer = STATE.matches
-    .filter(m => (m.players || []).includes(p.name))
+    .filter(m => (m.players || []).includes(name))
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-  document.getElementById('player-profile').innerHTML = `
-    <div class="profile-grid">
-      <div class="profile-stat"><div class="num">${p.wins}-${p.losses}</div><div class="label">Record</div></div>
-      <div class="profile-stat"><div class="num">${fmt1(p.avg_ppr)}</div><div class="label">Avg PPR</div></div>
-      <div class="profile-stat"><div class="num">${fmtPct(p.checkout_pct)}</div><div class="label">Checkout rate</div></div>
-      <div class="profile-stat"><div class="num">${p.s180}</div><div class="label">180s</div></div>
-      <div class="profile-stat"><div class="num">${p.biggest_dart}</div><div class="label">Biggest single dart</div></div>
-      <div class="profile-stat"><div class="num">${p.busts}</div><div class="label">Busts</div></div>
-    </div>
+  let html = '';
 
-    <div class="fun-fact">
-      <div class="icon">${icon('bull', '#1f5c46', 26)}</div>
-      <div class="body">
-        ${p.favorite_dart
-          ? `Signature throw: <strong>${p.favorite_dart}</strong> (hit ${p.favorite_dart_count} time${p.favorite_dart_count === 1 ? '' : 's'}).${p.favorite_dart.replace(/^[TD]/, '') !== String(p.favorite_number) ? ` Favorite number overall: <strong>${p.favorite_number}</strong>.` : ''}`
-          : 'Not enough darts thrown yet to find a signature throw.'}
+  if (p) {
+    const accuracyTotal = p.singles + p.doubles + p.triples + p.misses;
+    const pct = n => accuracyTotal ? Math.round(n / accuracyTotal * 100) : 0;
+    html += `
+      <div class="subblock-title">501</div>
+      <div class="profile-grid">
+        <div class="profile-stat"><div class="num">${p.wins}-${p.losses}</div><div class="label">Record</div></div>
+        <div class="profile-stat"><div class="num">${fmt1(p.avg_ppr)}</div><div class="label">Avg PPR</div></div>
+        <div class="profile-stat"><div class="num">${fmtPct(p.checkout_pct)}</div><div class="label">Checkout rate</div></div>
+        <div class="profile-stat"><div class="num">${p.s180}</div><div class="label">180s</div></div>
+        <div class="profile-stat"><div class="num">${p.biggest_dart}</div><div class="label">Biggest single dart</div></div>
+        <div class="profile-stat"><div class="num">${p.busts}</div><div class="label">Busts</div></div>
       </div>
-    </div>
 
-    <div class="card">
-      <div style="font-weight:700; margin-bottom:12px;">Throw split (${p.real_throws} scored darts, ${p.misses} misses)</div>
-      <div style="display:flex; gap:6px; height:26px; border-radius:6px; overflow:hidden; margin-bottom:10px;">
-        <div style="width:${pct(p.singles)}%; background:var(--board-soft);" title="Singles"></div>
-        <div style="width:${pct(p.doubles)}%; background:var(--dartgreen);" title="Doubles"></div>
-        <div style="width:${pct(p.triples)}%; background:var(--dartred);" title="Triples"></div>
-        <div style="width:${pct(p.misses)}%; background:var(--line);" title="Misses"></div>
-      </div>
-      <div style="font-size:12.5px; color:var(--board-soft); display:flex; gap:18px; flex-wrap:wrap;">
-        <span>${wedge(1)} Singles: ${p.singles}</span>
-        <span>${wedge(2)} Doubles: ${p.doubles}</span>
-        <span>${wedge(3)} Triples: ${p.triples}</span>
-        <span>Misses: ${p.misses}</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
-        <div style="font-weight:700;">Performance trend</div>
-        <div style="display:flex; gap:6px;">
-          <button class="trend-toggle active" data-metric="ppr" onclick="setTrendMetric('ppr')">PPR</button>
-          <button class="trend-toggle" data-metric="checkout" onclick="setTrendMetric('checkout')">Checkout %</button>
+      <div class="fun-fact">
+        <div class="icon">${icon('bull', '#1f5c46', 26)}</div>
+        <div class="body">
+          ${p.favorite_dart
+            ? `Signature throw: <strong>${p.favorite_dart}</strong> (hit ${p.favorite_dart_count} time${p.favorite_dart_count === 1 ? '' : 's'}).${p.favorite_dart.replace(/^[TD]/, '') !== String(p.favorite_number) ? ` Favorite number overall: <strong>${p.favorite_number}</strong>.` : ''}`
+            : 'Not enough darts thrown yet to find a signature throw.'}
         </div>
       </div>
-      <div id="player-trend-wrap"></div>
-    </div>
 
-    <div class="card">
-      <div style="font-weight:700; margin-bottom:12px;">Dartboard heatmap</div>
-      <div style="display:flex; justify-content:center;" id="player-dartboard-wrap"></div>
-    </div>
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:12px;">Throw split (${p.real_throws} scored darts, ${p.misses} misses)</div>
+        <div style="display:flex; gap:6px; height:26px; border-radius:6px; overflow:hidden; margin-bottom:10px;">
+          <div style="width:${pct(p.singles)}%; background:var(--board-soft);" title="Singles"></div>
+          <div style="width:${pct(p.doubles)}%; background:var(--dartgreen);" title="Doubles"></div>
+          <div style="width:${pct(p.triples)}%; background:var(--dartred);" title="Triples"></div>
+          <div style="width:${pct(p.misses)}%; background:var(--line);" title="Misses"></div>
+        </div>
+        <div style="font-size:12.5px; color:var(--board-soft); display:flex; gap:18px; flex-wrap:wrap;">
+          <span>${wedge(1)} Singles: ${p.singles}</span>
+          <span>${wedge(2)} Doubles: ${p.doubles}</span>
+          <span>${wedge(3)} Triples: ${p.triples}</span>
+          <span>Misses: ${p.misses}</span>
+        </div>
+      </div>
 
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+          <div style="font-weight:700;">Performance trend</div>
+          <div style="display:flex; gap:6px;">
+            <button class="trend-toggle active" data-metric="ppr" onclick="setTrendMetric('ppr')">PPR</button>
+            <button class="trend-toggle" data-metric="checkout" onclick="setTrendMetric('checkout')">Checkout %</button>
+          </div>
+        </div>
+        <div id="player-trend-wrap"></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:12px;">Dartboard heatmap</div>
+        <div style="display:flex; justify-content:center;" id="player-dartboard-wrap"></div>
+      </div>
+    `;
+  }
+
+  if (pc) {
+    const cAccuracyTotal = pc.singles + pc.doubles + pc.triples + pc.misses;
+    const cPct = n => cAccuracyTotal ? Math.round(n / cAccuracyTotal * 100) : 0;
+    html += `
+      <div class="subblock-title">Cricket</div>
+      <div class="profile-grid">
+        <div class="profile-stat"><div class="num">${pc.wins}-${pc.losses}</div><div class="label">Record</div></div>
+        <div class="profile-stat"><div class="num">${fmt2(pc.avg_mpr)}</div><div class="label">Avg MPR</div></div>
+        <div class="profile-stat"><div class="num">${fmt1(pc.avg_score)}</div><div class="label">Avg score</div></div>
+        <div class="profile-stat"><div class="num">${pc.white_horse}</div><div class="label">White Horses</div></div>
+        <div class="profile-stat"><div class="num">${pc.big_turns}</div><div class="label">7+ mark turns</div></div>
+        <div class="profile-stat"><div class="num">${pc.matches}</div><div class="label">Legs played</div></div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:12px;">Throw split (${pc.real_throws} darts hit, ${pc.misses} misses)</div>
+        <div style="display:flex; gap:6px; height:26px; border-radius:6px; overflow:hidden; margin-bottom:10px;">
+          <div style="width:${cPct(pc.singles)}%; background:var(--board-soft);" title="Singles"></div>
+          <div style="width:${cPct(pc.doubles)}%; background:var(--dartgreen);" title="Doubles"></div>
+          <div style="width:${cPct(pc.triples)}%; background:var(--dartred);" title="Triples"></div>
+          <div style="width:${cPct(pc.misses)}%; background:var(--line);" title="Misses"></div>
+        </div>
+        <div style="font-size:12.5px; color:var(--board-soft); display:flex; gap:18px; flex-wrap:wrap;">
+          <span>${wedge(1)} Singles: ${pc.singles}</span>
+          <span>${wedge(2)} Doubles: ${pc.doubles}</span>
+          <span>${wedge(3)} Triples: ${pc.triples}</span>
+          <span>Misses: ${pc.misses}</span>
+          <span>Scoring darts: ${pc.scoring_darts}</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-weight:700; margin-bottom:12px;">Cricket dartboard heatmap</div>
+        <p style="font-size:12.5px; color:var(--board-soft); margin-bottom:12px;">Every number physically hit while playing Cricket, regardless of whether it was a target that leg.</p>
+        <div style="display:flex; justify-content:center;" id="player-dartboard-wrap-cricket"></div>
+      </div>
+    `;
+  }
+
+  html += `
     <div class="section-head" style="margin-top:24px;"><h2 style="font-size:20px;">Match history</h2></div>
-    ${matchesForPlayer.map(m => matchCardHTML(m, false, 'player-' + p.name)).join('') || '<div class="card empty-note">No matches yet.</div>'}
+    ${matchesForPlayer.map(m => matchCardHTML(m, false, 'player-' + name)).join('') || '<div class="card empty-note">No matches yet.</div>'}
   `;
 
-  renderDartboardHeatmap(p.number_counts, 'player-dartboard-wrap');
+  document.getElementById('player-profile').innerHTML = html;
 
-  trendMatches = matchesForPlayer;
-  trendPlayerName = p.name;
-  document.querySelectorAll('.trend-toggle').forEach(b => b.classList.toggle('active', b.dataset.metric === trendMetric));
-  renderTrendChart(buildTrendData(trendMatches, trendPlayerName, trendMetric), trendMetric);
+  if (p) {
+    renderDartboardHeatmap(p.number_counts, 'player-dartboard-wrap');
+    trendMatches = matchesForPlayer.filter(is501);
+    trendPlayerName = name;
+    document.querySelectorAll('.trend-toggle').forEach(b => b.classList.toggle('active', b.dataset.metric === trendMetric));
+    renderTrendChart(buildTrendData(trendMatches, trendPlayerName, trendMetric), trendMetric);
+  }
+  if (pc) {
+    renderDartboardHeatmap(pc.number_counts, 'player-dartboard-wrap-cricket');
+  }
 }
 
 function renderStats() {
-  const players = Object.values(STATE.players);
   const container = document.getElementById('stats-content');
+  const players501 = Object.values(STATE.players);
+  const playersCricket = Object.values(STATE.playersCricket);
 
-  if (!players.length) {
+  if (!players501.length && !playersCricket.length) {
     container.innerHTML = '<div class="card empty-note">Not enough darts thrown yet -- check back after more matches.</div>';
     return;
   }
 
-  let highestCheckout = null;
-  STATE.matches.forEach(m => {
-    Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
-      if (ls.checkout_points != null && (!highestCheckout || ls.checkout_points > highestCheckout.points)) {
-        highestCheckout = { player: p, points: ls.checkout_points, date: m.date };
-      }
-    });
-  });
+  const gt = STATE.activeGameType;
+  const toggleHTML = `
+    <div class="game-toggle">
+      <button class="game-toggle-btn ${gt === '501' ? 'active' : ''}" data-gtype="501" onclick="setGameType('501')">501</button>
+      <button class="game-toggle-btn ${gt === 'cricket' ? 'active' : ''}" data-gtype="cricket" onclick="setGameType('cricket')">Cricket</button>
+    </div>
+  `;
 
-  function leaderboard(title, sortKey, formatter, sub, iconName, iconColor) {
+  function leaderboard(players, title, sortKey, formatter, sub, iconName, iconColor) {
     const sorted = [...players].filter(p => p[sortKey] > 0).sort((a, b) => b[sortKey] - a[sortKey]).slice(0, 8);
     const titleHtml = `<span style="display:inline-flex; align-items:center; gap:8px;">${icon(iconName || 'stats', iconColor || '#a4243b', 18)}${title}</span>`;
     if (!sorted.length) return `<div class="card"><div style="font-weight:700; margin-bottom:8px;">${titleHtml}</div><div class="empty-note">No data yet.</div></div>`;
@@ -993,32 +1348,82 @@ function renderStats() {
     `;
   }
 
-  container.innerHTML = `
-    <div class="section-head">
-      <h2 style="font-size:20px;">Hits by number</h2>
-      <p>How often each player has hit every number on the board. Click a column to sort.</p>
-    </div>
-    <div class="card" id="number-grid-wrap"></div>
+  if (gt === '501') {
+    let highestCheckout = null;
+    STATE.matches.filter(is501).forEach(m => {
+      Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+        if (ls.checkout_points != null && (!highestCheckout || ls.checkout_points > highestCheckout.points)) {
+          highestCheckout = { player: p, points: ls.checkout_points, date: m.date };
+        }
+      });
+    });
 
-    <div class="card" style="display:flex; align-items:center; gap:16px; margin-top:8px;">
-      <div class="icon">${icon('checkout', '#a4243b', 32)}</div>
-      <div>
-        <div style="font-weight:700;">Highest checkout</div>
-        <div style="font-size:14px; color:var(--board-soft);">
-          ${highestCheckout ? `${dn(highestCheckout.player)} checked out from ${highestCheckout.points} (${fmtDate(highestCheckout.date)}).` : 'No data yet.'}
+    container.innerHTML = `
+      <div class="section-head">
+        <h2 style="font-size:20px;">Hits by number</h2>
+        <p>How often each player has hit every number on the board. Click a column to sort.</p>
+      </div>
+      ${toggleHTML}
+      <div class="card" id="number-grid-wrap"></div>
+
+      <div class="card" style="display:flex; align-items:center; gap:16px; margin-top:8px;">
+        <div class="icon">${icon('checkout', '#a4243b', 32)}</div>
+        <div>
+          <div style="font-weight:700;">Highest checkout</div>
+          <div style="font-size:14px; color:var(--board-soft);">
+            ${highestCheckout ? `${dn(highestCheckout.player)} checked out from ${highestCheckout.points} (${fmtDate(highestCheckout.date)}).` : 'No data yet.'}
+          </div>
         </div>
       </div>
-    </div>
 
-    ${leaderboard('Most 180s', 's180', p => p.s180, null, 'maxscore', '#b08a3e')}
-    ${leaderboard('Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`, 'triples', '#a4243b')}
-    ${leaderboard('Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`, 'doubles', '#1f5c46')}
-    ${leaderboard('Most bulls hit', 'bulls', p => p.bulls, null, 'bull', '#a4243b')}
-    ${leaderboard('Most busts', 'busts', p => p.busts, null, 'bust', '#211d19')}
-    ${leaderboard('Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1), null, 'dartvalue', '#a4243b')}
-  `;
+      ${leaderboard(players501, 'Most 180s', 's180', p => p.s180, null, 'maxscore', '#b08a3e')}
+      ${leaderboard(players501, 'Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`, 'triples', '#a4243b')}
+      ${leaderboard(players501, 'Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`, 'doubles', '#1f5c46')}
+      ${leaderboard(players501, 'Most bulls hit', 'bulls', p => p.bulls, null, 'bull', '#a4243b')}
+      ${leaderboard(players501, 'Most busts', 'busts', p => p.busts, null, 'bust', '#211d19')}
+      ${leaderboard(players501, 'Highest average dart value', 'avg_dart', p => p.avg_dart.toFixed(1), null, 'dartvalue', '#a4243b')}
+    `;
 
-  renderNumberGrid(players);
+    renderNumberGrid(players501);
+  } else {
+    let bestScore = null;
+    STATE.matches.filter(m => !is501(m)).forEach(m => {
+      Object.entries(m.leg_stats || {}).forEach(([p, ls]) => {
+        if (ls.score != null && (!bestScore || ls.score > bestScore.score)) {
+          bestScore = { player: p, score: ls.score, date: m.date };
+        }
+      });
+    });
+
+    container.innerHTML = `
+      <div class="section-head">
+        <h2 style="font-size:20px;">Hits by number</h2>
+        <p>How often each player has hit every number while playing Cricket. Click a column to sort.</p>
+      </div>
+      ${toggleHTML}
+      <div class="card" id="number-grid-wrap"></div>
+
+      <div class="card" style="display:flex; align-items:center; gap:16px; margin-top:8px;">
+        <div class="icon">${icon('peak', '#a4243b', 32)}</div>
+        <div>
+          <div style="font-weight:700;">Highest single-leg score</div>
+          <div style="font-size:14px; color:var(--board-soft);">
+            ${bestScore ? `${dn(bestScore.player)} scored ${bestScore.score} (${fmtDate(bestScore.date)}).` : 'No data yet.'}
+          </div>
+        </div>
+      </div>
+
+      ${leaderboard(playersCricket, 'Most White Horses', 'white_horse', p => p.white_horse, null, 'triples', '#a4243b')}
+      ${leaderboard(playersCricket, 'Most 7+ mark turns', 'big_turns', p => p.big_turns, null, 'maxscore', '#b08a3e')}
+      ${leaderboard(playersCricket, 'Best average MPR', 'avg_mpr', p => fmt2(p.avg_mpr), p => `${p.matches} leg${p.matches === 1 ? '' : 's'} played`, 'consistency', '#a4243b')}
+      ${leaderboard(playersCricket, 'Most triples hit', 'triples', p => p.triples, p => `${wedge(3)} out of ${p.real_throws} darts`, 'triples', '#a4243b')}
+      ${leaderboard(playersCricket, 'Most doubles hit', 'doubles', p => p.doubles, p => `${wedge(2)} out of ${p.real_throws} darts`, 'doubles', '#1f5c46')}
+      ${leaderboard(playersCricket, 'Most bulls hit', 'bulls', p => p.bulls, null, 'bull', '#a4243b')}
+      ${leaderboard(playersCricket, 'Most matches played', 'matches', p => p.matches, null, 'matches', '#a4243b')}
+    `;
+
+    renderNumberGrid(playersCricket);
+  }
 }
 
 let numberGridSort = { key: 20, dir: -1 };
@@ -1150,9 +1555,22 @@ async function init() {
       console.error('Could not load darts/player_aliases.json (check it is valid JSON):', aliasesRes.reason);
     }
 
-    const { players, byMatch } = aggregate(STATE.matches, STATE.throws);
+    const matches501 = STATE.matches.filter(is501);
+    const matchesCricket = STATE.matches.filter(m => !is501(m));
+    const match501Ids = new Set(matches501.map(m => m.match_id));
+    const throws501 = STATE.throws.filter(t => match501Ids.has(t.match_id));
+    const throwsCricket = STATE.throws.filter(t => !match501Ids.has(t.match_id));
+
+    const { players, byMatch } = aggregate(matches501, throws501);
     STATE.players = players;
-    STATE.byMatch = byMatch;
+    STATE.playersCricket = aggregateCricket(matchesCricket, throwsCricket);
+
+    const allByMatch = {};
+    STATE.throws.forEach(t => {
+      if (!allByMatch[t.match_id]) allByMatch[t.match_id] = [];
+      allByMatch[t.match_id].push(t);
+    });
+    STATE.byMatch = allByMatch;
 
     renderAll();
   } catch (err) {
