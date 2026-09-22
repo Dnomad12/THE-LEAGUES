@@ -30,6 +30,8 @@
   table{width:100%;border-collapse:collapse;}
   thead th{background:var(--navy);color:white;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px;text-align:left;}
   thead th.num{text-align:center;}
+  thead th.sortable{cursor:pointer;user-select:none;}
+  thead th.sortable:hover{color:var(--gold);}
   tbody td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;}
   tbody td.num{text-align:center;font-weight:600;}
   tbody tr:last-child td{border-bottom:none;}
@@ -177,6 +179,8 @@ const URLS = {
 function handicapSpot(gap) {
   return Math.min(6, Math.round(Math.abs(gap) / 40));
 }
+
+let allTimeSort = { key: 'rating', dir: -1 };
 
 const PROXY = 'https://corsproxy.io/?';
 
@@ -505,6 +509,11 @@ async function init() {
   if (ratingsData && Array.isArray(ratingsData.players)) {
     ratingsData.players.forEach(r => { ratingByName[r.player.toLowerCase().trim()] = r; });
   }
+  players.forEach(p => {
+    const rt = ratingByName[p.player.toLowerCase().trim()];
+    p.rating = rt ? rt.rating : null;
+    p.rating_provisional = rt ? rt.provisional : false;
+  });
 
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setText('stat-players', players.length);
@@ -554,52 +563,77 @@ async function init() {
     }).join('') + '</div>';
   }
 
-  const rows = players.map(p => {
-    const diff = p.differential >= 0
-      ? `<span class="diff-pos">+${p.differential}</span>`
-      : `<span class="diff-neg">${p.differential}</span>`;
-    const tags = `<div class="tourn-tags">${p.tournaments.map(tournTag).join('')}</div>`;
-    const rt = ratingByName[p.player.toLowerCase().trim()];
-    const ratingCell = rt
-      ? `<span class="rating-chip">${rt.rating}${rt.provisional ? '<span class="prov-mark" title="Fewer than 15 career matches — rating is still settling in">*</span>' : ''}</span>`
-      : '<span style="color:var(--text-muted);font-size:12px;">—</span>';
-    return `<tr>
-      <td class="num">${rankBadge(p.ranking)}</td>
-      <td>
-        <div class="player-cell">
-          <div><span class="player-name">${p.player}</span>${tags}</div>
-        </div>
-      </td>
-      <td class="num"><span class="pts-chip${p.ranking===1?' top':''}">${p.league_points}</span></td>
-      <td class="num">${p.wins}</td>
-      <td class="num">${p.ties}</td>
-      <td class="num">${p.losses}</td>
-      <td class="num">${p.matches_played}</td>
-      <td class="num">${p.win_pct}%</td>
-      <td class="num">${diff}</td>
-      <td class="num">${ratingCell}</td>
-      <td>${renderBadges(p.badges)}</td>
-    </tr>`;
-  }).join('');
+  const allTimeCols = [
+    { key: 'rating', label: 'Rating', num: true, sortable: true, get: p => p.rating },
+    { key: 'ranking', label: '#', num: true, sortable: false },
+    { key: 'player', label: 'Player', sortable: true, get: p => p.player },
+    { key: 'wins', label: 'W', num: true, sortable: true, get: p => p.wins },
+    { key: 'ties', label: 'D', num: true, sortable: true, get: p => p.ties },
+    { key: 'losses', label: 'L', num: true, sortable: true, get: p => p.losses },
+    { key: 'matches_played', label: 'MP', num: true, sortable: true, get: p => p.matches_played },
+    { key: 'win_pct', label: 'Win%', num: true, sortable: true, get: p => p.win_pct },
+    { key: 'differential', label: 'Diff', num: true, sortable: true, get: p => p.differential },
+    { key: 'badges', label: 'Badges & Penalties', sortable: false },
+  ];
 
-  document.getElementById('table-wrap').innerHTML = `
-    <table>
-      <thead><tr>
-        <th class="num">#</th>
-        <th>Player</th>
-        <th class="num">Pts</th>
-        <th class="num">W</th>
-        <th class="num">D</th>
-        <th class="num">L</th>
-        <th class="num">MP</th>
-        <th class="num">Win%</th>
-        <th class="num">Diff</th>
-        <th class="num">Rating</th>
-        <th>Badges & Penalties</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  function drawAllTimeTable() {
+    const sorted = [...players].sort((a, b) => {
+      const col = allTimeCols.find(c => c.key === allTimeSort.key);
+      const av = col.get(a), bv = col.get(b);
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === 'string') return av.localeCompare(bv) * allTimeSort.dir;
+      return (av - bv) * allTimeSort.dir;
+    });
 
+    const head = allTimeCols.map(c => {
+      const cls = (c.num ? 'num ' : '') + (c.sortable ? 'sortable' : '');
+      const arrow = c.sortable && allTimeSort.key === c.key ? (allTimeSort.dir === 1 ? ' ▲' : ' ▼') : '';
+      const click = c.sortable ? ` onclick="setAllTimeSort('${c.key}')"` : '';
+      return `<th class="${cls}"${click}>${c.label}${arrow}</th>`;
+    }).join('');
+
+    const rows = sorted.map((p, i) => {
+      const diff = p.differential >= 0
+        ? `<span class="diff-pos">+${p.differential}</span>`
+        : `<span class="diff-neg">${p.differential}</span>`;
+      const tags = `<div class="tourn-tags">${p.tournaments.map(tournTag).join('')}</div>`;
+      const ratingCell = p.rating != null
+        ? `<span class="rating-chip">${p.rating}${p.rating_provisional ? '<span class="prov-mark" title="Fewer than 15 career matches — rating is still settling in">*</span>' : ''}</span>`
+        : '<span style="color:var(--text-muted);font-size:12px;">—</span>';
+      return `<tr>
+        <td class="num">${ratingCell}</td>
+        <td class="num">${rankBadge(i + 1)}</td>
+        <td>
+          <div class="player-cell">
+            <div><span class="player-name">${p.player}</span>${tags}</div>
+          </div>
+        </td>
+        <td class="num">${p.wins}</td>
+        <td class="num">${p.ties}</td>
+        <td class="num">${p.losses}</td>
+        <td class="num">${p.matches_played}</td>
+        <td class="num">${p.win_pct}%</td>
+        <td class="num">${diff}</td>
+        <td>${renderBadges(p.badges)}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('table-wrap').innerHTML = `
+      <table>
+        <thead><tr>${head}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  window.setAllTimeSort = function (key) {
+    if (allTimeSort.key === key) allTimeSort.dir *= -1;
+    else { allTimeSort.key = key; allTimeSort.dir = key === 'player' ? 1 : -1; }
+    drawAllTimeTable();
+  };
+
+  drawAllTimeTable();
   setupHandicapPicker(ratingsData);
   } catch(err) {
     console.error('Rankings build error:', err);
