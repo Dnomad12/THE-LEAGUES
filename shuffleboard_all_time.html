@@ -91,7 +91,24 @@
   .hof-card .who{font-weight:700;margin-top:5px;font-size:14px;color:var(--navy);}
   .hof-card .detail{font-size:12px;color:var(--text-muted);}
   .section-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
-  @media(max-width:768px){.page{padding:16px;}.hero{padding:24px 20px;}.hero::before{display:none;}.hero h1{font-size:30px;}table{font-size:12px;}thead th,tbody td{padding:8px 10px;}.avatar{width:28px;height:28px;font-size:11px;}.player-name{font-size:13px;}}
+
+  .rating-chip{display:inline-flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;color:var(--navy);}
+  .rating-chip .prov-mark{font-size:11px;color:var(--text-muted);font-weight:700;cursor:help;}
+  .handicap-section{background:var(--surface);border-radius:12px;padding:24px;box-shadow:var(--shadow);margin-bottom:24px;}
+  .handicap-intro{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:18px;}
+  .handicap-picker{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+  .handicap-picker select{font-family:'Barlow',sans-serif;font-size:14px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);min-width:200px;}
+  .handicap-vs{font-family:'Barlow Condensed',sans-serif;font-weight:800;color:var(--text-muted);font-size:13px;letter-spacing:1px;}
+  .handicap-result{display:flex;gap:20px;flex-wrap:wrap;}
+  .handicap-card{flex:1;min-width:200px;background:var(--bg);border-radius:10px;padding:16px 18px;border:2px solid transparent;}
+  .handicap-card.favored{border-color:var(--border);}
+  .handicap-card.underdog{border-color:var(--gold);background:#fff8e1;}
+  .handicap-card .hc-name{font-weight:700;font-size:15px;color:var(--navy);margin-bottom:4px;}
+  .handicap-card .hc-rating{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+  .handicap-card .hc-spot{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--navy);}
+  .handicap-card .hc-spot-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+  .handicap-empty{color:var(--text-muted);font-size:13px;font-style:italic;}
+  @media(max-width:768px){.page{padding:16px;}.hero{padding:24px 20px;}.hero::before{display:none;}.hero h1{font-size:30px;}table{font-size:12px;}thead th,tbody td{padding:8px 10px;}.avatar{width:28px;height:28px;font-size:11px;}.player-name{font-size:13px;}.handicap-picker select{min-width:0;flex:1;}}
 </style>
 </head>
 <body>
@@ -125,6 +142,21 @@
   <div class="section-title">🏆 Hall of Fame</div>
   <div class="hof-grid" id="hof-grid"></div>
 
+  <div class="section-title">⚖️ Skill Rating &amp; Handicap</div>
+  <div class="handicap-section">
+    <div class="handicap-intro">
+      Every player's rating is calculated from their full match history — Deathmatch, March Madness &amp; League 2026, in the order they were played. Pick two players to see the suggested head-start ("spot") for a balanced Season 2 match. A player with fewer than 15 career matches is marked <span class="prov-mark">*provisional</span> — their rating is still settling in.
+    </div>
+    <div class="handicap-picker">
+      <select id="hc-player-a"><option value="">Select player A…</option></select>
+      <span class="handicap-vs">VS</span>
+      <select id="hc-player-b"><option value="">Select player B…</option></select>
+    </div>
+    <div class="handicap-result" id="handicap-result">
+      <div class="handicap-empty">Pick two players above to see their suggested handicap.</div>
+    </div>
+  </div>
+
   <div id="legend-area"></div>
   <div id="table-wrap"><div class="loading"><div class="spinner">🥏</div><br><div id="load-status">Loading match data...</div></div></div>
   <div class="bottom-legend" id="bottom-legend"></div>
@@ -136,7 +168,15 @@ const URLS = {
   teams:        'shuffleboard/teams.json',
   replacements: 'shuffleboard/replacements.json',
   badges:       'shuffleboard/badges.json',
+  ratings:      'shuffleboard/ratings.json',
 };
+
+// Suggested score-spot for a rating gap: the lower-rated player starts
+// with this many free points before a race-to-15 game. Roughly 1 spot per
+// 40 rating points, capped so even a huge gap stays playable.
+function handicapSpot(gap) {
+  return Math.min(6, Math.round(Math.abs(gap) / 40));
+}
 
 const PROXY = 'https://corsproxy.io/?';
 
@@ -256,6 +296,60 @@ function renderHallOfFame(players, alltimeRows, badgeDefs) {
   `).join('') : '<div class="empty">Not enough matches yet to crown any records.</div>';
 }
 
+function setupHandicapPicker(ratingsData) {
+  const selA = document.getElementById('hc-player-a');
+  const selB = document.getElementById('hc-player-b');
+  const resultEl = document.getElementById('handicap-result');
+  if (!selA || !selB || !resultEl) return;
+
+  const players = (ratingsData && Array.isArray(ratingsData.players)) ? ratingsData.players : [];
+  if (!players.length) {
+    resultEl.innerHTML = '<div class="handicap-empty">No rating data yet — run the "Sync Sheets to JSON" workflow to compute ratings.</div>';
+    return;
+  }
+
+  const sorted = [...players].sort((a, b) => a.player.localeCompare(b.player));
+  const optionsHTML = sorted.map(p => `<option value="${p.player}">${p.player} (${p.rating}${p.provisional ? '*' : ''})</option>`).join('');
+  selA.innerHTML = '<option value="">Select player A…</option>' + optionsHTML;
+  selB.innerHTML = '<option value="">Select player B…</option>' + optionsHTML;
+
+  function render() {
+    const a = players.find(p => p.player === selA.value);
+    const b = players.find(p => p.player === selB.value);
+    if (!a || !b) {
+      resultEl.innerHTML = '<div class="handicap-empty">Pick two players above to see their suggested handicap.</div>';
+      return;
+    }
+    if (a.player === b.player) {
+      resultEl.innerHTML = '<div class="handicap-empty">Pick two different players.</div>';
+      return;
+    }
+    const gap = a.rating - b.rating;
+    const spot = handicapSpot(gap);
+    const favored = gap >= 0 ? a : b;
+    const underdog = gap >= 0 ? b : a;
+    const provNote = (favored.provisional || underdog.provisional)
+      ? '<div style="font-size:11px;color:var(--text-muted);margin-top:10px;">* Rating still provisional (fewer than 15 career matches) — treat this spot as a starting point.</div>' : '';
+    resultEl.innerHTML = `
+      <div class="handicap-card favored">
+        <div class="hc-name">${favored.player}${favored.provisional ? '*' : ''}</div>
+        <div class="hc-rating">Rating ${favored.rating}</div>
+        <div class="hc-spot">0</div>
+        <div class="hc-spot-label">Starts at</div>
+      </div>
+      <div class="handicap-card underdog">
+        <div class="hc-name">${underdog.player}${underdog.provisional ? '*' : ''}</div>
+        <div class="hc-rating">Rating ${underdog.rating}</div>
+        <div class="hc-spot">${spot}</div>
+        <div class="hc-spot-label">Starts at</div>
+      </div>
+      ${provNote}`;
+  }
+
+  selA.addEventListener('change', render);
+  selB.addEventListener('change', render);
+}
+
 async function init() {
   const setStatus = (msg) => {
     const el = document.getElementById('load-status');
@@ -270,6 +364,8 @@ async function init() {
   const replacementsRows = await fetchCSV(URLS.replacements);
   setStatus('Loading badge definitions...');
   const badgesRows = await fetchCSV(URLS.badges);
+  setStatus('Loading skill ratings...');
+  const ratingsData = await fetchCSV(URLS.ratings);
   setStatus('Building rankings...');
   try {
 
@@ -405,6 +501,11 @@ async function init() {
   })).sort((a, b) => (b.league_points - a.league_points) || (b.differential - a.differential))
     .map((p, i) => ({ ranking: i + 1, ...p }));
 
+  const ratingByName = {};
+  if (ratingsData && Array.isArray(ratingsData.players)) {
+    ratingsData.players.forEach(r => { ratingByName[r.player.toLowerCase().trim()] = r; });
+  }
+
   const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   setText('stat-players', players.length);
   renderHallOfFame(players, alltimeRows, badgeDefs);
@@ -458,6 +559,10 @@ async function init() {
       ? `<span class="diff-pos">+${p.differential}</span>`
       : `<span class="diff-neg">${p.differential}</span>`;
     const tags = `<div class="tourn-tags">${p.tournaments.map(tournTag).join('')}</div>`;
+    const rt = ratingByName[p.player.toLowerCase().trim()];
+    const ratingCell = rt
+      ? `<span class="rating-chip">${rt.rating}${rt.provisional ? '<span class="prov-mark" title="Fewer than 15 career matches — rating is still settling in">*</span>' : ''}</span>`
+      : '<span style="color:var(--text-muted);font-size:12px;">—</span>';
     return `<tr>
       <td class="num">${rankBadge(p.ranking)}</td>
       <td>
@@ -472,6 +577,7 @@ async function init() {
       <td class="num">${p.matches_played}</td>
       <td class="num">${p.win_pct}%</td>
       <td class="num">${diff}</td>
+      <td class="num">${ratingCell}</td>
       <td>${renderBadges(p.badges)}</td>
     </tr>`;
   }).join('');
@@ -488,10 +594,13 @@ async function init() {
         <th class="num">MP</th>
         <th class="num">Win%</th>
         <th class="num">Diff</th>
+        <th class="num">Rating</th>
         <th>Badges & Penalties</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+
+  setupHandicapPicker(ratingsData);
   } catch(err) {
     console.error('Rankings build error:', err);
     document.getElementById('table-wrap').innerHTML =
