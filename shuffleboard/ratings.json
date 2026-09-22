@@ -1,0 +1,281 @@
+{
+  "generated_at": "2026-09-22T07:23:48.026428+00:00",
+  "k_factor": 24,
+  "initial_rating": 1500,
+  "provisional_threshold": 15,
+  "players": [
+    {
+      "rank": 1,
+      "player": "Quentin Coulon",
+      "rating": 1624,
+      "matches_played": 47,
+      "provisional": false
+    },
+    {
+      "rank": 2,
+      "player": "Sebastian Heise",
+      "rating": 1579,
+      "matches_played": 42,
+      "provisional": false
+    },
+    {
+      "rank": 3,
+      "player": "Marc Dammann",
+      "rating": 1549,
+      "matches_played": 26,
+      "provisional": false
+    },
+    {
+      "rank": 4,
+      "player": "Dominik Hantel",
+      "rating": 1548,
+      "matches_played": 36,
+      "provisional": false
+    },
+    {
+      "rank": 5,
+      "player": "Daniel Uric",
+      "rating": 1547,
+      "matches_played": 44,
+      "provisional": false
+    },
+    {
+      "rank": 6,
+      "player": "Jan-Eric Pietsch",
+      "rating": 1544,
+      "matches_played": 11,
+      "provisional": true
+    },
+    {
+      "rank": 7,
+      "player": "Iga Jagodzinska",
+      "rating": 1542,
+      "matches_played": 15,
+      "provisional": false
+    },
+    {
+      "rank": 8,
+      "player": "Ulf Wotsch",
+      "rating": 1542,
+      "matches_played": 9,
+      "provisional": true
+    },
+    {
+      "rank": 9,
+      "player": "Lorenz Adam",
+      "rating": 1530,
+      "matches_played": 6,
+      "provisional": true
+    },
+    {
+      "rank": 10,
+      "player": "Benjamin Eveillard",
+      "rating": 1522,
+      "matches_played": 4,
+      "provisional": true
+    },
+    {
+      "rank": 11,
+      "player": "Pierre Sonier",
+      "rating": 1516,
+      "matches_played": 12,
+      "provisional": true
+    },
+    {
+      "rank": 12,
+      "player": "John Nnadozie",
+      "rating": 1513,
+      "matches_played": 37,
+      "provisional": false
+    },
+    {
+      "rank": 13,
+      "player": "Matteo Rodogna",
+      "rating": 1512,
+      "matches_played": 25,
+      "provisional": false
+    },
+    {
+      "rank": 14,
+      "player": "Vanessa Nieto",
+      "rating": 1510,
+      "matches_played": 27,
+      "provisional": false
+    },
+    {
+      "rank": 15,
+      "player": "Felix te Kaat",
+      "rating": 1510,
+      "matches_played": 3,
+      "provisional": true
+    },
+    {
+      "rank": 16,
+      "player": "Rajkumar Pitchaimani",
+      "rating": 1508,
+      "matches_played": 6,
+      "provisional": true
+    },
+    {
+      "rank": 17,
+      "player": "Pedro Figueiredo I",
+      "rating": 1501,
+      "matches_played": 3,
+      "provisional": true
+    },
+    {
+      "rank": 18,
+      "player": "Kristina Attermeyer",
+      "rating": 1499,
+      "matches_played": 18,
+      "provisional": false
+    },
+    {
+      "rank": 19,
+      "player": "Iavosoa Randrianarivelo",
+      "rating": 1497,
+      "matches_played": 41,
+      "provisional": false
+    },
+    {
+      "rank": 20,
+      "player": "Malin Sonier",
+      "rating": 1494,
+      "matches_played": 3,
+      "provisional": true
+    },
+    {
+      "rank": 21,
+      "player": "Svenja Vogts",
+      "rating": 1493,
+      "matches_played": 27,
+      "provisional": false
+    },
+    {
+      "rank": 22,
+      "player": "Michaela Bukovac",
+      "rating": 1489,
+      "matches_played": 9,
+      "provisional": true
+    },
+    {
+      "rank": 23,
+      "player": "Thomas Rousseau",
+      "rating": 1489,
+      "matches_played": 3,
+      "provisional": true
+    },
+    {
+      "rank": 24,
+      "player": "Nicolas Paix",
+      "rating": 1489,
+      "matches_played": 3,
+      "provisional": true
+    },
+    {
+      "rank": 25,
+      "player": "Nicolas Chastenet",
+      "rating": 1489,
+      "matches_played": 7,
+      "provisional": true
+    },
+    {
+      "rank": 26,
+      "player": "Ernesto Ramirez",
+      "rating": 1486,
+      "matches_played": 4,
+      "provisional": true
+    },
+    {
+      "rank": 27,
+      "player": "Noémie Lalanne",
+      "rating": 1486,
+      "matches_played": 29,
+      "provisional": false
+    },
+    {
+      "rank": 28,
+      "player": "Duy Nguyen",
+      "rating": 1483,
+      "matches_played": 17,
+      "provisional": false
+    },
+    {
+      "rank": 29,
+      "player": "Jose Figueiredo",
+      "rating": 1482,
+      "matches_played": 34,
+      "provisional": false
+    },
+    {
+      "rank": 30,
+      "player": "Lars Hofferbert",
+      "rating": 1477,
+      "matches_played": 4,
+      "provisional": true
+    },
+    {
+      "rank": 31,
+      "player": "Sirma Karageorgieva",
+      "rating": 1475,
+      "matches_played": 9,
+      "provisional": true
+    },
+    {
+      "rank": 32,
+      "player": "Julia Budziak",
+      "rating": 1471,
+      "matches_played": 39,
+      "provisional": false
+    },
+    {
+      "rank": 33,
+      "player": "Patrick Rahn",
+      "rating": 1469,
+      "matches_played": 9,
+      "provisional": true
+    },
+    {
+      "rank": 34,
+      "player": "Marjan Ghobadian",
+      "rating": 1468,
+      "matches_played": 29,
+      "provisional": false
+    },
+    {
+      "rank": 35,
+      "player": "Louis Rother",
+      "rating": 1460,
+      "matches_played": 5,
+      "provisional": true
+    },
+    {
+      "rank": 36,
+      "player": "Bastian Zahn",
+      "rating": 1454,
+      "matches_played": 22,
+      "provisional": false
+    },
+    {
+      "rank": 37,
+      "player": "Nils Gasde",
+      "rating": 1431,
+      "matches_played": 20,
+      "provisional": false
+    },
+    {
+      "rank": 38,
+      "player": "Lea Moreno Rey",
+      "rating": 1420,
+      "matches_played": 11,
+      "provisional": true
+    },
+    {
+      "rank": 39,
+      "player": "Chinmayi Vijayendra",
+      "rating": 1400,
+      "matches_played": 20,
+      "provisional": false
+    }
+  ]
+}
