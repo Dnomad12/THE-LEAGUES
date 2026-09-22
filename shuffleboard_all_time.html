@@ -175,9 +175,9 @@ const URLS = {
 
 // Suggested score-spot for a rating gap: the lower-rated player starts
 // with this many free points before a race-to-15 game. Roughly 1 spot per
-// 40 rating points, capped so even a huge gap stays playable.
+// 20 rating points, capped so even a huge gap stays playable.
 function handicapSpot(gap) {
-  return Math.min(6, Math.round(Math.abs(gap) / 40));
+  return Math.min(6, Math.round(Math.abs(gap) / 20));
 }
 
 let allTimeSort = { key: 'rating', dir: -1 };
